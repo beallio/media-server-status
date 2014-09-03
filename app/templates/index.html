@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="utf-8">
+    <title>beallio.com</title>
+    <meta name="author" content="beallio">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Le styles -->
+    <link href="static/fonts/stylesheet.css" rel="stylesheet">
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.0/css/font-awesome.css" rel="stylesheet">
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="//code.jquery.com/jquery.js"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <link href="static/css/mods.css" rel="stylesheet">
+    <link rel="shortcut icon" href="static/ico/favicon.ico">
+    <script type=text/javascript>
+        $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+
+
+    </script>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="row">
+                <!-- Left sidebar -->
+                <div class="col-md-3" style="padding-top: 20px;">
+                    <!-- Online profiles -->
+                    <div class="panel panel-default">
+                        <div class="panel-heading toggler" id="toggler-weather">
+                            <h4 class="panel-title exoextralight">
+                                Weather
+                            </h4>
+                        </div>
+                        <div class="panel-body slider" id="weather">
+                            {% include "weather.html" %}
+                        </div>
+                    </div>
+                    <!-- Bandwidth -->
+                    <div class="panel panel-default">
+                        <div class="panel-heading toggler" id="toggler-bandwidth">
+                            <h4 class="panel-title exoextralight">
+                                Bandwidth
+                            </h4>
+                        </div>
+                        <div class="panel-body slider" id="bandwidth">
+                            {% include "bandwidth.html" %}
+                        </div>
+                    </div>
+                    <!-- Services -->
+                    <div class="panel panel-default">
+                        <div class="panel-heading toggler" id="toggler-services">
+                            <h4 class="panel-title exoextralight">
+                                Services
+                            </h4>
+                        </div>
+                        <div class="panel-body" id="services" style="margin-bottom:5px">
+                            {% include "services.html" ignore missing with context %}
+                        </div>
+                    </div>
+                </div>
+                <!-- Center Area -->
+                <div class="col-md-6">
+                    {% if results.now_playing %}
+                    {% include "now_playing.html" ignore missing with context %}
+                    {% elif results.recently_added %}
+                    {% include "recently_added.html" ignore missing with context %}
+                    {% endif %}
+                </div>
+                <!-- Right sidebar -->
+                <div class="col-md-3" style="padding-top: 20px;">
+                    <!-- Load Panel -->
+                    <div class="panel panel-default">
+                        {% include "system_info.html" ignore missing with context %}
+                    </div>
+                    <!-- Storage Panel -->
+                    <div class="panel panel-default">
+                        <div class="panel-heading toggler" id="toggler-storage">
+                            <h4 class="panel-title exoextralight">
+                                Storage
+                            </h4>
+                        </div>
+                        {% include "storage.html" ignore missing with context %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="get_server_info" style=" position: fixed; bottom: 1px; right: 2px;">load: {{ time }}</div>
+<div id="server_ip" style="display:none"></div>
+<div id="client_ip" style="display:none"></div>
+<script src="static/js/functions.js"></script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<style type="text/css">
+    .album_info {
+    margin-top: 10px;
+    margin-bottom: 0px;
+    float: left;
+    font-family: "exoextralight";
+    text-align: left;
+    }
+</style>
+<div id="recently_added_title">
+    <h1 class="exoextralight">
+        Now Playing
+        <hr>
+    </h1>
+    <h3 class="exoextralight">
+        Subsonic
+    </h3>
+
+    <div id="recently_added" style="overflow: auto; width: 100%; height: 800px; margin: 0 auto">
+        <div class="col-md-12">
+            <div id="carousel-example-generic" class=" carousel slide">
+                <div class="thumbnail">
+                    <!-- Wrapper for slides -->
+                    <div class="carousel-inner">
+                        {% for item in results.now_playing %}
+                        {% if loop.first %}
+                        <div class="item active">
+                            <a href="http://beallio.com/subsonic/main.view?id={{ item.id }}" target="main">
+                                <img src="{{item.coverArtLocalLink}}" alt="{{ item.album }}"/>
+                            </a>
+
+                            <div class="progress now-playing-progress-bar">
+                                <div class="progress-bar progress-bar-warning" role="progressbar"
+                                     aria-valuenow="{{ item.progress_whole}}" aria-valuemin="0" aria-valuemax="100"
+                                     style="width: {{ item.progress_pct }}"></div>
+                            </div>
+                            <div class="album_info">
+                                <b class="exolight">Artist:</b>&nbsp;{{ item.artist }}<br>
+                                <b class="exolight">Track:</b>&nbsp;{{ item.track }}. {{ item.title }}<br>
+                                <b class="exolight">Album:</b>&nbsp;{{ item.album }}<br>
+                                <b class="exolight">Year:</b>&nbsp;{{item.year}}
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="item">
+                            <a href="http://beallio.com/subsonic/main.view?id={{ item.id }}" target="main">
+                                <img src="{{item.coverArtLocalLink}}" alt="{{ item.album }}"/>
+                            </a>
+
+                            <div class="progress now-playing-progress-bar">
+                                <div class="progress-bar progress-bar-warning" role="progressbar"
+                                     aria-valuenow="{{ item.progress_whole}}" aria-valuemin="0" aria-valuemax="100"
+                                     style="width: {{ item.progress_pct }}"></div>
+                            </div>
+                            <div class="album_info">
+                                <b class="exolight">Artist:</b>&nbsp;{{ item.artist }}<br>
+                                <b class="exolight">Track:</b>&nbsp;{{ item.track }}. {{ item.title }}<br>
+                                <b class="exolight">Album:</b>&nbsp;{{ item.album }}<br>
+                                <b class="exolight">Year:</b>&nbsp;{{item.year}}
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                <!-- Controls -->
+                <a class="left carousel-control" href="#carousel-example-generic" data-slide="prev"></a>
+                <a class="right carousel-control" href="#carousel-example-generic" data-slide="next"></a>
+            </div>
+        </div>
+        <script>
+        // Enable bootstrap tooltips
+        $(function ()
+            { $("[rel=tooltip]").tooltip();
+        });
+
+        $('.carousel').carousel({
+            interval: 30000
+        })
+
+
+
+        </script>
+    </div>
+    <hr class="visible-xs visible-sm">
+</div>
+<hr class="visible-xs visible-sm">

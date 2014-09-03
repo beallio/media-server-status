@@ -1,0 +1,21 @@
+<div class="panel-body" id="storage" style="margin-bottom:-10px">
+    <div class="exolight">Total Capacity: <span id="total-storage">{{ '{:0.0f}%'.format(total_storage['pct']) }}</span>
+
+        <div id="tooltip-total" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="" class="progress"
+             data-original-title="{{ total_storage['free'] }} free out of {{ total_storage['total'] }}">
+            <div id="progressbar-total" class="progress-bar" style="width: {{ total_storage['pct'] }}%"></div>
+        </div>
+    </div>
+    {% for disk, values in storage.iteritems() %}
+    <!-- {{ disk }} -->
+    <div class="exolight">{{ disk }} Capacity: <span
+            id="{{ disk }}-storage">{{ '{:0.0f}%'.format(values['pct']) }}</span>
+
+        <div id="tooltip-{{ disk }}" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title=""
+             class="progress"
+             data-original-title="{{ values['free'] }} free out of {{ values['total'] }}">
+            <div id="progressbar-{{ disk }}" class="progress-bar" style="width: {{ values['pct'] }}%"></div>
+        </div>
+    </div>
+    {% endfor %}
+</div>

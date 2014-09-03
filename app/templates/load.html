@@ -1,0 +1,46 @@
+<style type="text/css">
+
+</style>
+<!-- Transcode sessions title & badge div-->
+<h4 class="panel-title exoextralight">
+    Load
+    {% if plex_transcodes > 0 %}
+    <!-- each order of magnitude should increase notification box by 10px, base is 20 pxs -->
+    <span id="transcodeSessions" class="badge pull-right" rel="tooltip" data-toggle="tooltip"
+          data-placement="bottom" title="" style="width:{{ ('{:}'.format(plex_transcodes)|length - 1) * 10 + 20 }}px;
+          margin-right:10px; margin-left:-{{ ('{:}'.format(plex_transcodes)|length - 1) * 10 + 30 }}px; margin-top: -2px;"
+          data-original-title="Transcode Sessions">{{ plex_transcodes }}
+    </span>
+    {% endif %}
+</h4>
+<hr class="hr_break">
+<div id="system_load">
+    <!-- 1 min -->
+    <div class="exolight">1 min:
+        <span id="1-min-load">{{ '{0:0.0%}'.format(sys_info['load_avg'][0]) }}</span>
+
+        <div class="progress">
+            <div id="1-min-load-bar"
+                 class="progress-bar" style="width: {{ '{0:0.0%}'.format(sys_info['load_avg'][0]) }}"></div>
+        </div>
+    </div>
+    <!-- 5 min -->
+    <div class="exolight">5 min:
+        <span id="5-min-load">{{ '{0:0.0%}'.format(sys_info['load_avg'][1]) }}</span>
+
+        <div class="progress">
+            <div id="5-min-load-bar"
+                 class="progress-bar" style="width: {{ '{0:0.0%}'.format(sys_info['load_avg'][1]) }}">
+            </div>
+        </div>
+    </div>
+    <!-- 15 min -->
+    <div class="exolight">15 min:
+        <span id="15-min-load">{{ '{0:0.0%}'.format(sys_info['load_avg'][2]) }}</span>
+
+        <div class="progress">
+            <div id="15-min-load-bar"
+                 class="progress-bar" style="width: {{ '{0:0.0%}'.format(sys_info['load_avg'][2]) }}"></div>
+        </div>
+    </div>
+</div>

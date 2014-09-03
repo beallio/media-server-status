@@ -1,0 +1,57 @@
+<div id="recently_added_title">
+    <h1 class="exoextralight">
+        Recently Added
+        <hr>
+    </h1>
+    <h3 class="exoextralight">
+        Subsonic
+    </h3>
+
+    <div class="recently_added">
+        <div class="col-md-12">
+            <div id="carousel-example-generic" class=" carousel slide">
+                <div class="thumbnail">
+                    <!-- Wrapper for slides -->
+                    <div class="carousel-inner">
+                        {% for item in results.recently_added %}
+                        {% if loop.first %}
+                        <div class="item active">
+                            <a href="{{ subsonic_info['external_url'] }}/main.view?id={{ item.id }}" target="main">
+                                <img src="{{item.coverArtLocalLink}}"/>
+                            </a>
+
+                            <div class="album_info">
+                                <b class="exolight">Artist:</b> {{ item.artist }}<br>
+                                <b class="exolight">Album:</b> {{ item.album }}<br>
+                                <b class="exolight">Year:</b> {{item.year}}
+                            </div>
+                        </div>
+                        <!--
+                                                            <a href="#" data-toggle="tooltip"
+                                                        title="Artist: {{ item.artist }}&#013;
+                                                        Album: {{ item.album }}&#013;
+                                                        Year: {{item.year}}">test</a>
+                                                        -->
+                        {% else %}
+                        <div class="item">
+                            <a href="{{ subsonic_info['external_url'] }}/main.view?id={{ item.id }}" target="main">
+                                <img src="{{item.coverArtLocalLink}}" alt="{{ item.album }}"/>
+                            </a>
+
+                            <div class="album_info">
+                                <b class="exolight">Artist:</b> {{ item.artist }}<br>
+                                <b class="exolight">Album:</b> {{ item.album }}<br>
+                                <b class="exolight">Year:</b> {{item.year}}
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                <!-- Controls -->
+                <a class="left carousel-control" href="#carousel-example-generic" data-slide="prev"></a>
+                <a class="right carousel-control" href="#carousel-example-generic" data-slide="next"></a>
+            </div>
+        </div>
+    </div>
+</div>
