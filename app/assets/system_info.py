@@ -34,8 +34,9 @@ def convert_bytes(value, unit, output_str=False, decimals=2, auto_determine=Fals
             base_power -= base_power
         unit = swap_conversion_values[base_power]
         converted_value = value / base ** conversions[unit]
-    if all([output_str, decimals < 0]):
-        decimals = 0
+    if output_str:
+        if decimals < 0:
+            decimals = 0
         return '{:,.{decimal}f} {unit}'.format(converted_value, decimal=decimals, unit=unit)
     else:
         return converted_value
