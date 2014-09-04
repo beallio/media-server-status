@@ -8,6 +8,7 @@ class Service(object):
         self.service_name = None
         self.connect_status = None
         self.server_full_url = None
+        self.resolved_status_mapping = None
         self.SERVICES_STATUS_MAPPING = dict(
             False=dict(
                 text='Offline',
@@ -37,6 +38,10 @@ class Service(object):
         )
 
     @property
+    def getStatusMapping(self):
+        return self.resolved_status_mapping
+
+    @property
     def getConnectionStatus(self):
         return self.connect_status
 
@@ -47,6 +52,19 @@ class Service(object):
     def _test_server_connection(self):
         # method to be overridden by subclasses
         return
+
+    def _get_status_mapping(self):
+        try:
+            return {self.service_name: self.SERVICES_STATUS_MAPPING[str(self.connect_status)]}
+        except KeyError:
+            return {self.service_name: dict()}
+
+    @staticmethod
+    def _strip_base_path(filepath):
+        delim = '/'
+        path = os.path.split(os.path.realpath(__file__))[0]
+        basepath_to_remove = ''.join(path.split(delim)[-2]) + delim
+        return filepath.replace(basepath_to_remove, '')
 
 
 class SubSonic(Service):
@@ -65,6 +83,7 @@ class SubSonic(Service):
                                         serverPath=self.server_info['serverpath'])
         self.connect_status = self._test_server_connection()
         self.server_full_url = self._get_server_full_url()
+        self.resolved_status_mapping = self._get_status_mapping()
 
     def retrieve_now_playing_or_recently_added(self, number_of_results=10):
         entries = {}
@@ -119,12 +138,6 @@ class SubSonic(Service):
             with open(full_filepath, 'wb') as f:
                 f.write(img_data.read())
         return self._strip_base_path(full_filepath)
-
-    def _strip_base_path(self, filepath):
-        delim = '/'
-        path = os.path.split(os.path.realpath(__file__))[0]
-        basepath_to_remove = ''.join(path.split(delim)[-2]) + delim
-        return filepath.replace(basepath_to_remove, '')
 
     def _get_entry_info(self, entry):
         """
