@@ -1,22 +1,22 @@
-import flask
 import datetime
+
+import flask
+
 from app import app, test_data
-import app.info_services.api_functions as api_functions
+import app.assets.api_functions as api_functions
 
 
 @app.route('/')
 @app.route('/index')
 def index():
     t1 = datetime.datetime.now()
-    subsonic_server_creds = test_data.SUBSONIC_INFO
-    plex_server_creds = test_data.PLEX_INFO
     results = api_functions.media_results()
     status = api_functions.server_status()
     system_info = api_functions.system_info()
     storage = api_functions.storage()
     return flask.render_template('index.html',
-                                 subsonic_info=subsonic_server_creds,
-                                 plex_info=plex_server_creds,
+                                 subsonic_info=test_data.SUBSONIC_INFO,
+                                 plex_info=test_data.PLEX_INFO,
                                  results=results,
                                  server_status=status,
                                  sys_info=system_info,

@@ -1,10 +1,12 @@
 import datetime
 import subprocess
-import psutil
 import os
 import time
 import urllib2
+from collections import OrderedDict
 from math import floor, log
+
+import psutil
 
 
 def convert_bytes(value, unit, output_str=False, decimals=2, auto_determine=False):
@@ -32,9 +34,8 @@ def convert_bytes(value, unit, output_str=False, decimals=2, auto_determine=Fals
             base_power -= base_power
         unit = swap_conversion_values[base_power]
         converted_value = value / base ** conversions[unit]
-    if output_str:
-        if decimals < 0:
-            decimals = 0
+    if all([output_str, decimals < 0]):
+        decimals = 0
         return '{:,.{decimal}f} {unit}'.format(converted_value, decimal=decimals, unit=unit)
     else:
         return converted_value
@@ -83,16 +84,16 @@ def get_system_uptime():
         assert type(x) is int and type(kind) is str
         return '{} {}'.format(str(x), kind + 's' if x != 1 else kind)
 
-    boottime = datetime.datetime.fromtimestamp(psutil.boot_time()).replace(microsecond=0)
+    boot_time = datetime.datetime.fromtimestamp(psutil.boot_time()).replace(microsecond=0)
     time_now = datetime.datetime.now().replace(microsecond=0)
-    delta = time_now - boottime
+    delta = time_now - boot_time
     formatted_time = str(delta).split(',')
     hours = formatted_time[1].strip().split(':')
     hours.pop(2)
     hours, mins = [int(hour) for hour in hours]
     formatted_time = dict(days=formatted_time[0], hours=append_type(hours, 'hour'), min=append_type(mins, 'minute'))
     output = dict(
-        boottime=boottime,
+        boottime=boot_time,
         uptime=delta,
         uptime_formatted=formatted_time)
     return output
@@ -119,16 +120,17 @@ def get_network_speed(sleep=1):
                 down=convert_bytes((end_data[1] - start_data[1]) / time_delta.seconds * bits, 'MB'))
 
 
-def get_formatted_paritions_usage(partitions, digits=1):
+def get_total_system_space(digits=1):
     """
-    returns mount point space formatted, ex.
+    returns total system disk space formatted, ex.
         {'total': '8,781.9 GB', 'used': '3,023.0 GB', 'pct': 34.4, 'free': '5,313.4 GB'}
 
     :rtype : dict
     :param digits: int
     :return: dict
     """
-    assert all([type(digits) is int, type(partitions) is dict])
+    assert type(digits) is int
+    partitions = get_partitions()
     disk_space = dict(total=sum([partitions[partition].total for partition in partitions]),
                       used=sum([partitions[partition].used for partition in partitions]),
                       free=sum([partitions[partition].free for partition in partitions]))
@@ -137,12 +139,33 @@ def get_formatted_paritions_usage(partitions, digits=1):
     return disk_space_formatted
 
 
+def get_partitions_space(partitions, digits=1, sort='alpha'):
+    """
+    {'Home': {'total': '168.8 GB', 'pct': 44.4, 'free': '85.3 GB', 'used': '74.9 GB'},
+        'Incoming': {'total': '293.3 GB', 'pct': 48.2, 'free': '137.0 GB', 'used': '141.4 GB'}}
+    :param partitions:
+    :param digits:
+    :return:
+    """
+    assert type(partitions) is dict
+    system_partitions = get_partitions()
+    disk_space = {p: system_partitions[partitions[p]] for p in partitions}
+    disk_space_formatted = {p: dict(total=convert_bytes(disk_space[p].total, 'GB', True, digits, True),
+                                    used=convert_bytes(disk_space[p].used, 'GB', True, digits, True),
+                                    free=convert_bytes(disk_space[p].free, 'GB', True, digits, True)) for p in
+                            disk_space}
+    for p in disk_space:
+        disk_space_formatted[p]['pct'] = round(float(disk_space[p].used) / float(disk_space[p].total) * 100.0,
+                                               digits)
+    if sort.lower() == 'alpha':
+        # place in ordered dictionary so paths always display in alphabetical order on page
+        disk_space_formatted = OrderedDict(sorted(disk_space_formatted.items(), key=lambda x: x[0]))
+    return disk_space_formatted
+
+
 class GetSystemInfo(object):
     def __init__(self):
-        self.partitions = None
-        self.mem_info = None
-        self.load_avg = None
-        self.info = self.get_info()
+        pass
 
     def get_info(self):
         """
@@ -157,58 +180,15 @@ class GetSystemInfo(object):
                     {'hours': '2 hours', 'days': '6 days', 'min': '26 minutes'}
         :return: dict
         """
-        self.refresh_data()
+        mem_info = psutil.virtual_memory()
         system_uptime = get_system_uptime()
-
-        return dict(mem_total=convert_bytes(self.mem_info[0], 'MB'),
-                    mem_available=convert_bytes(self.mem_info[1], 'MB'),
-                    mem_used_pct=self.mem_info[2],
-                    mem_bars=self._memory_bars(self.mem_info[2]),
-                    load_avg=self.load_avg,
+        load_avg = os.getloadavg()
+        return dict(mem_total=convert_bytes(mem_info[0], 'MB'),
+                    mem_available=convert_bytes(mem_info[1], 'MB'),
+                    mem_used_pct=mem_info[2],
+                    mem_bars=self._memory_bars(mem_info[2]),
+                    load_avg=load_avg,
                     uptime_formatted=system_uptime['uptime_formatted'])
-
-    def get_total_system_space(self, digits=1):
-        """
-        returns total system disk space formatted, ex.
-            {'total': '8,781.9 GB', 'used': '3,023.0 GB', 'pct': 34.4, 'free': '5,313.4 GB'}
-
-        :rtype : dict
-        :param digits: int
-        :return: dict
-        """
-        assert type(digits) is int
-        partitions = self.partitions
-        disk_space = dict(total=sum([partitions[partition].total for partition in partitions]),
-                          used=sum([partitions[partition].used for partition in partitions]),
-                          free=sum([partitions[partition].free for partition in partitions]))
-        disk_space_formatted = {k: convert_bytes(disk_space[k], 'GB', True, digits, True) for k in disk_space}
-        disk_space_formatted['pct'] = round(float(disk_space['used']) / float(disk_space['total']) * 100.0, digits)
-        return disk_space_formatted
-
-    def get_partitions_space(self, partitions, digits=1):
-        """
-        {'Home': {'total': '168.8 GB', 'pct': 44.4, 'free': '85.3 GB', 'used': '74.9 GB'},
-            'Incoming': {'total': '293.3 GB', 'pct': 48.2, 'free': '137.0 GB', 'used': '141.4 GB'}}
-        :param partitions:
-        :param digits:
-        :return:
-        """
-        assert type(partitions) is dict
-        system_partitions = self.partitions
-        disk_space = {p: system_partitions[partitions[p]] for p in partitions}
-        disk_space_formatted = {p: dict(total=convert_bytes(disk_space[p].total, 'GB', True, digits, True),
-                                        used=convert_bytes(disk_space[p].used, 'GB', True, digits, True),
-                                        free=convert_bytes(disk_space[p].free, 'GB', True, digits, True)) for p in
-                                disk_space}
-        for p in disk_space:
-            disk_space_formatted[p]['pct'] = round(float(disk_space[p].used) / float(disk_space[p].total) * 100.0,
-                                                   digits)
-        return disk_space_formatted
-
-    def refresh_data(self):
-        self.partitions = get_partitions()
-        self.mem_info = psutil.virtual_memory()
-        self.load_avg = os.getloadavg()
 
     @staticmethod
     def _memory_bars(val_pct):

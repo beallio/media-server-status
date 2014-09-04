@@ -1,10 +1,59 @@
 import os
+
 import libsonic
 
 
-class SubSonic(object):
+class Service(object):
+    def __init__(self):
+        self.service_name = None
+        self.connect_status = None
+        self.server_full_url = None
+        self.SERVICES_STATUS_MAPPING = dict(
+            False=dict(
+                text='Offline',
+                icon='icon-off icon-white',
+                css_class='btn_mod btn btn-xs btn-danger',
+            ),
+            True=dict(
+                text='Online',
+                icon='icon-ok icon-white',
+                css_class='btn_mod btn btn-xs btn-success',
+            ),
+            ServerSyncActive=dict(
+                text='Online',
+                icon='icon-download icon-white',
+                css_class='btn_mod btn btn-xs btn-success',
+            ),
+            BackupServerActive=dict(
+                text='Active',
+                icon='icon-upload icon-white',
+                css_class='btn_mod btn btn-xs btn-success',
+            ),
+            Waiting=dict(
+                text='Pending',
+                icon='icon-pause icon-white',
+                css_class='btn_mod btn btn-xs btn-warning',
+            )
+        )
+
+    @property
+    def getConnectionStatus(self):
+        return self.connect_status
+
+    @property
+    def getServerFullURL(self):
+        return self.server_full_url
+
+    def _test_server_connection(self):
+        # method to be overridden by subclasses
+        return
+
+
+class SubSonic(Service):
     def __init__(self, server_info):
+        Service.__init__(self)
         assert type(server_info) is dict
+        self.service_name = 'subsonic'
         self.image_dir = 'app/static/img/tmp/'
         self.server_info = server_info
         self.conn = libsonic.Connection(baseUrl=self.server_info['url'],
@@ -124,3 +173,50 @@ class SubSonic(object):
     def _get_server_full_url(self):
         return '{url}:{port:d}{path}'.format(url=self.server_info['url'], port=self.server_info['port'],
                                              path=self.server_info['serverpath'])
+
+
+class CheckCrashPlan(Service):
+    def __init__(self, filepath):
+        Service.__init__(self)
+        assert os.path.exists(filepath)
+        self.service_name = 'backup'
+        self.file_path = filepath
+        self.connect_status = self._test_server_connection()
+
+    def _test_server_connection(self):
+        items_to_keep = ['scanning', 'backupenabled']
+        with open(self.file_path, 'r') as f:
+            items = [line.lower().split() for line in f.readlines() for x in items_to_keep if x in line.lower()]
+        # remove "=" from list
+        for item in items:
+            item.remove('=')
+        items_values = [True if item[1] == 'true' else False for item in items]
+        if all(items_values):
+            return 'active'
+        elif any(items_values):
+            return 'waiting'
+        else:
+            return False
+
+
+class ServerSync(Service):
+    def __init__(self, filepath):
+        Service.__init__(self)
+        self.file_path = filepath
+        self.service_name = 'serversync'
+        self.connect_status = self._test_server_connection()
+
+    def _test_server_connection(self):
+        return os.path.exists(self.file_path)
+
+
+class Plex(Service):
+    def __init__(self, server_info):
+        Service.__init__(self)
+        assert type(server_info) is dict
+        self.server_info = server_info
+        self.service_name = 'plex'
+        self.connect_status = self._test_server_connection()
+
+    def _test_server_connection(self):
+        return True

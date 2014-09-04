@@ -1,2 +1,2 @@
-import subsonic_info
+import services
 # import system_info

@@ -140,29 +140,6 @@ $(function(){
         }
         */
 
-
-        function update_services() {
-            var status_map = {
-                False: {
-                    text: 'Offline',
-                    icon: 'icon-off icon-white',
-                    css_class: "btn_mod btn btn-xs btn-danger",
-                },
-                True: {
-                    text: 'Online',
-                    icon: 'icon-ok icon-white',
-                    css_class: "btn_mod btn btn-xs btn-success",
-                },
-                active: 'Active',
-                waiting: 'Pending',
-            };
-            $.getJSON( api_base_url + "server_status", function(data)
-                {
-                //$("#ping").text(data.ping + " ms");
-                }) ;
-        }
-
-
         // Load at start of page
         update_network_speed();
         update_ping();
