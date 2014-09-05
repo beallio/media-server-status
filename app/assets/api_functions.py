@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from app.assets import services
 from app.assets.services import CheckCrashPlan, SubSonic, ServerSync, Plex
 from app.assets.system_info import GetSystemInfo, get_network_speed, get_ping, get_wan_ip, get_partitions_space, \
@@ -28,15 +30,14 @@ def ip_address():
     return dict(wan_ip=get_wan_ip(), internal_ip=config.INTERNAL_IP)
 
 
-def server_status():
-    subsonic = SubSonic(config.SUBSONIC_INFO)
-    plex = Plex(config.PLEX_INFO)
-    serversync = ServerSync(config.SERVERSYNC_INFO)
-    crashplan = CheckCrashPlan(config.CRASHPLAN_INFO)
-    return dict(subsonic_status=subsonic.getConnectionStatus,
-                server_sync_status=serversync.getConnectionStatus,
-                plex_status=plex.getConnectionStatus,
-                backup_server_status=crashplan.getConnectionStatus)
+def services_status():
+    servers = [Plex(config.PLEX_INFO), SubSonic(config.SUBSONIC_INFO), ServerSync(config.SERVERSYNC_INFO),
+               CheckCrashPlan(config.CRASHPLAN_INFO)]
+    servers_mapped = [getattr(s, 'getStatusMapping') for s in servers]
+    servers_dict = OrderedDict()
+    for s in servers_mapped:
+        servers_dict = OrderedDict(servers_dict.items() + s.items())
+    return servers_dict
 
 
 def media_results():

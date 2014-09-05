@@ -16,9 +16,7 @@
                         {% for item in results.recently_added %}
                         {% if loop.first %}
                         <div class="item active">
-                            <a href="{{ subsonic_info['external_url'] }}/main.view?id={{ item.id }}" target="main">
-                                <img src="{{item.coverArtLocalLink}}"/>
-                            </a>
+                            <img src="{{item.coverArtLocalLink}}"/>
 
                             <div class="album_info">
                                 <b class="exolight">Artist:</b> {{ item.artist }}<br>
@@ -34,9 +32,7 @@
                                                         -->
                         {% else %}
                         <div class="item">
-                            <a href="{{ subsonic_info['external_url'] }}/main.view?id={{ item.id }}" target="main">
-                                <img src="{{item.coverArtLocalLink}}" alt="{{ item.album }}"/>
-                            </a>
+                            <img src="{{item.coverArtLocalLink}}" alt="{{ item.album }}"/>
 
                             <div class="album_info">
                                 <b class="exolight">Artist:</b> {{ item.artist }}<br>

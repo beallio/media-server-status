@@ -1,51 +1,13 @@
 <table class="center">
     <tbody>
+    {% for server, mappings in server_status.iteritems() %}
     <tr class="spaceUnder">
-        <td class="exoextralight services_btns">Plex</td>
-        {% if server_status.plex_status %}
-        <td class="btn_mod"><a href="{{ plex_info['external_url'] }}" target="_blank"
-                               class="btn_mod btn btn-xs btn-success" id="plex_status">
-            <span class="icon-ok icon-white" id="plex_status-icon"></span> Online</a>
+        <td class="exoextralight services_btns">{{ mappings.title }}</td>
+        <td class="btn_mod"><a {% if mappings.external_url %} href="{{ mappings.external_url }}" target="_blank"
+            {% else %} href=# {% endif %} class="{{ mappings.css_class }}" id="{{ server }}_status">
+            <span class="{{ mappings.icon }}" id="{{ server }}_status-icon"></span> {{ mappings.text }}</a>
         </td>
-        {% else %}
-        <td class="btn_mod"><a class="btn_mod btn btn-xs btn-danger" id="plex_status"><span
-                class="icon-off icon-white" id="plex_status-icon"></span> Offline</a></td>
-        {% endif %}
     </tr>
-    <tr class="spaceUnder">
-        <td class="exoextralight services_btns">Subsonic</td>
-        {% if server_status.subsonic_status %}
-        <td class="btn_mod"><a href="{{ subsonic_info['external_url'] }}" target="_blank"
-                               class="btn_mod btn btn-xs btn-success" id="subsonic_status">
-            <span class="icon-ok icon-white" id="subsonic_status-icon"></span> Online</a>
-        </td>
-        {% else %}
-        <td class="btn_mod"><a class="btn_mod btn btn-xs btn-danger" id="subsonic_status"><span
-                class="icon-off icon-white" id="subsonic_status-icon"></span> Offline</a></td>
-        {% endif %}
-    </tr>
-    <tr class="spaceUnder">
-        <td class="exoextralight services_btns">Server Sync</td>
-        {% if server_status.server_sync_status %}
-        <td class="btn_mod"><a class="btn_mod btn btn-xs btn-success" id="server_sync_status"><span
-                class="icon-download icon-white" id="server_sync_status-icon"></span> Online</a></td>
-        {% else %}
-        <td class="btn_mod"><a class="btn_mod btn btn-xs btn-danger" id="server_sync_status"><span
-                class="icon-off icon-white" id="server_sync_status-icon"></span> Offline</a></td>
-        {% endif %}
-    </tr>
-    <tr class="spaceUnder">
-        <td class="exoextralight services_btns">Backups</td>
-        {% if server_status.backup_server_status=="active" %}
-        <td class="btn_mod"><a class="btn_mod btn btn-xs btn-success" id="backup_server_status"><span
-                class="icon-upload icon-white" id="backup_server_status-icon"></span> Active</a></td>
-        {% elif server_status.backup_server_status=="waiting" %}
-        <td class="btn_mod"><a class="btn_mod btn btn-xs btn-warning" id="backup_server_status"><span
-                class="icon-pause icon-white" id="backup_server_status-icon"></span> Pending</a></td>
-        {% else %}
-        <td class="btn_mod"><a class="btn_mod btn btn-xs btn-danger" id="backup_server_status"><span
-                class="icon-off icon-white" id="backup_server_status-icon"></span> Offline</a></td>
-        {% endif %}
-    </tr>
+    {% endfor %}
     </tbody>
 </table>

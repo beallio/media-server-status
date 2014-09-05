@@ -7,10 +7,10 @@ class Service(object):
     def __init__(self, service_info):
         assert type(service_info) is dict
         self.server_info = service_info
+        self.SERVICES_STATUS_MAPPING = self._get_status_mappings_dict()
         self.service_name = None
         self.connect_status = None
         self.server_full_url = None
-        self.SERVICES_STATUS_MAPPING = self._get_status_mappings_dict()
         self.resolved_status_mapping = dict()
 
     @property
@@ -25,6 +25,10 @@ class Service(object):
     def getServerFullURL(self):
         return self.server_full_url
 
+    @property
+    def getExternalURL(self):
+        return self._get_config_attrib('external_url')
+
     def _test_server_connection(self):
         # method to be overridden by subclasses
         return
@@ -35,6 +39,8 @@ class Service(object):
         try:
             output = {service_name: self.SERVICES_STATUS_MAPPING[str(self.connect_status)]}
             output[service_name]['title'] = self._add_service_name_to_status_mapping()
+            if self.getExternalURL:
+                output[service_name]['external_url'] = self.getExternalURL
         except KeyError:
             pass
         print output
@@ -50,6 +56,12 @@ class Service(object):
             title = service_name.title()
         return title
 
+    def _get_config_attrib(self, attrib):
+        try:
+            return self.server_info[attrib]
+        except KeyError:
+            # Config attribute not found
+            return None
 
     @staticmethod
     def _strip_base_path(filepath):
