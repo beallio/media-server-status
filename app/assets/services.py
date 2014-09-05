@@ -4,12 +4,75 @@ import libsonic
 
 
 class Service(object):
-    def __init__(self):
+    def __init__(self, service_info):
+        assert type(service_info) is dict
+        self.server_info = service_info
         self.service_name = None
         self.connect_status = None
         self.server_full_url = None
-        self.resolved_status_mapping = None
-        self.SERVICES_STATUS_MAPPING = dict(
+        self.SERVICES_STATUS_MAPPING = self._get_status_mappings_dict()
+        self.resolved_status_mapping = dict()
+
+    @property
+    def getStatusMapping(self):
+        return self.resolved_status_mapping
+
+    @property
+    def getConnectionStatus(self):
+        return self.connect_status
+
+    @property
+    def getServerFullURL(self):
+        return self.server_full_url
+
+    def _test_server_connection(self):
+        # method to be overridden by subclasses
+        return
+
+    def _get_status_mapping(self):
+        service_name = self.service_name
+        output = {service_name: dict()}
+        try:
+            output = {service_name: self.SERVICES_STATUS_MAPPING[str(self.connect_status)]}
+            output[service_name]['title'] = self._add_service_name_to_status_mapping()
+        except KeyError:
+            pass
+        print output
+        return output
+
+    def _add_service_name_to_status_mapping(self):
+        delim = '-'
+        service_name = self.service_name
+        if delim in service_name:
+            title = service_name.split(delim)
+            title = ' '.join([w.title() for w in title])
+        else:
+            title = service_name.title()
+        return title
+
+
+    @staticmethod
+    def _strip_base_path(filepath):
+        delim = '/'
+        path = os.path.split(os.path.realpath(__file__))[0]
+        basepath_to_remove = ''.join(path.split(delim)[-2]) + delim
+        return filepath.replace(basepath_to_remove, '')
+
+    def _test_file_path(self, file_path_key):
+        output = None
+        try:
+            file_path = self.server_info[file_path_key]
+            if os.path.exists(file_path):
+                output = file_path
+        except KeyError:
+            print "key doesn't exist"
+            pass
+        finally:
+            return output
+
+    @staticmethod
+    def _get_status_mappings_dict():
+        return dict(
             False=dict(
                 text='Offline',
                 icon='icon-off icon-white',
@@ -37,43 +100,12 @@ class Service(object):
             )
         )
 
-    @property
-    def getStatusMapping(self):
-        return self.resolved_status_mapping
-
-    @property
-    def getConnectionStatus(self):
-        return self.connect_status
-
-    @property
-    def getServerFullURL(self):
-        return self.server_full_url
-
-    def _test_server_connection(self):
-        # method to be overridden by subclasses
-        return
-
-    def _get_status_mapping(self):
-        try:
-            return {self.service_name: self.SERVICES_STATUS_MAPPING[str(self.connect_status)]}
-        except KeyError:
-            return {self.service_name: dict()}
-
-    @staticmethod
-    def _strip_base_path(filepath):
-        delim = '/'
-        path = os.path.split(os.path.realpath(__file__))[0]
-        basepath_to_remove = ''.join(path.split(delim)[-2]) + delim
-        return filepath.replace(basepath_to_remove, '')
-
 
 class SubSonic(Service):
     def __init__(self, server_info):
-        Service.__init__(self)
-        assert type(server_info) is dict
+        Service.__init__(self, server_info)
         self.service_name = 'subsonic'
         self.image_dir = 'app/static/img/tmp/'
-        self.server_info = server_info
         self.conn = libsonic.Connection(baseUrl=self.server_info['url'],
                                         username=self.server_info['user'],
                                         password=self.server_info['password'],
@@ -85,7 +117,7 @@ class SubSonic(Service):
         self.server_full_url = self._get_server_full_url()
         self.resolved_status_mapping = self._get_status_mapping()
 
-    def retrieve_now_playing_or_recently_added(self, number_of_results=10):
+    def getNowPlayingOrRecentlyAdded(self, number_of_results=10):
         entries = {}
         now_playing_count = 0
         if not self.connect_status:
@@ -189,12 +221,12 @@ class SubSonic(Service):
 
 
 class CheckCrashPlan(Service):
-    def __init__(self, filepath):
-        Service.__init__(self)
-        assert os.path.exists(filepath)
-        self.service_name = 'backup'
-        self.file_path = filepath
+    def __init__(self, server_info):
+        Service.__init__(self, server_info)
+        self.service_name = 'backups'
+        self.file_path = self._test_file_path('logfile_path')
         self.connect_status = self._test_server_connection()
+        self.resolved_status_mapping = self._get_status_mapping()
 
     def _test_server_connection(self):
         items_to_keep = ['scanning', 'backupenabled']
@@ -205,31 +237,36 @@ class CheckCrashPlan(Service):
             item.remove('=')
         items_values = [True if item[1] == 'true' else False for item in items]
         if all(items_values):
-            return 'active'
+            return 'BackupServerActive'
         elif any(items_values):
-            return 'waiting'
+            return 'Waiting'
         else:
             return False
 
 
 class ServerSync(Service):
-    def __init__(self, filepath):
-        Service.__init__(self)
-        self.file_path = filepath
-        self.service_name = 'serversync'
+    def __init__(self, server_info):
+        Service.__init__(self, server_info)
+        self.lockfile_path = self._test_file_path('lockfile_path')
+        self.service_name = 'server-sync'
         self.connect_status = self._test_server_connection()
+        self.resolved_status_mapping = self._get_status_mapping()
 
     def _test_server_connection(self):
-        return os.path.exists(self.file_path)
+        try:
+            return os.path.exists(self.lockfile_path)
+        except TypeError:
+            return False
 
 
 class Plex(Service):
     def __init__(self, server_info):
-        Service.__init__(self)
+        Service.__init__(self, server_info)
         assert type(server_info) is dict
         self.server_info = server_info
         self.service_name = 'plex'
         self.connect_status = self._test_server_connection()
+        self.resolved_status_mapping = self._get_status_mapping()
 
     def _test_server_connection(self):
         return True

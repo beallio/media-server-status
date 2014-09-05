@@ -31,13 +31,15 @@ def ip_address():
 def server_status():
     subsonic = SubSonic(config.SUBSONIC_INFO)
     plex = Plex(config.PLEX_INFO)
+    serversync = ServerSync(config.SERVERSYNC_INFO)
+    crashplan = CheckCrashPlan(config.CRASHPLAN_INFO)
     return dict(subsonic_status=subsonic.getConnectionStatus,
-                server_sync_status=ServerSync(config.SERVERSYNC_LOCKFILE_PATH).getConnectionStatus,
+                server_sync_status=serversync.getConnectionStatus,
                 plex_status=plex.getConnectionStatus,
-                backup_server_status=CheckCrashPlan(config.CRASHPLAN_LOGFILE_PATH).getConnectionStatus)
+                backup_server_status=crashplan.getConnectionStatus)
 
 
 def media_results():
     plex_server_creds = config.PLEX_INFO
     s = services.SubSonic(config.SUBSONIC_INFO)
-    return s.retrieve_now_playing_or_recently_added()
+    return s.getNowPlayingOrRecentlyAdded()
