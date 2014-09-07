@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from app.assets import services
+from app.assets import services, weather
 from app.assets.services import CheckCrashPlan, SubSonic, ServerSync, Plex
 from app.assets.system_info import GetSystemInfo, get_network_speed, get_ping, get_wan_ip, get_partitions_space, \
     get_total_system_space
@@ -44,3 +44,8 @@ def media_results():
     plex_server_creds = config.PLEX_INFO
     s = services.SubSonic(config.SUBSONIC_INFO)
     return s.getNowPlayingOrRecentlyAdded()
+
+
+def weather_data():
+    w = weather.ForecastData(config.WEATHER)
+    return w.getForecastData()

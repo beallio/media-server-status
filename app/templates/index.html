@@ -18,8 +18,6 @@
     <link rel="shortcut icon" href="static/ico/favicon.ico">
     <script type=text/javascript>
         $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
-
-
     </script>
 </head>
 <body>
@@ -29,17 +27,8 @@
             <div class="row">
                 <!-- Left sidebar -->
                 <div class="col-md-3" style="padding-top: 20px;">
-                    <!-- Online profiles -->
-                    <div class="panel panel-default">
-                        <div class="panel-heading toggler" id="toggler-weather">
-                            <h4 class="panel-title exoextralight">
-                                Weather
-                            </h4>
-                        </div>
-                        <div class="panel-body slider" id="weather">
-                            {% include "weather.html" %}
-                        </div>
-                    </div>
+                    <!-- Weather -->
+                    {% include "weather.html" %}
                     <!-- Bandwidth -->
                     <div class="panel panel-default">
                         <div class="panel-heading toggler" id="toggler-bandwidth">

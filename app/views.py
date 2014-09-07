@@ -15,6 +15,7 @@ def index():
     server_status = api_functions.services_status()
     system_info = api_functions.system_info()
     storage = api_functions.storage()
+    weather = api_functions.weather_data()
     return flask.render_template('index.html',
                                  results=media_results,
                                  server_status=server_status,
@@ -22,6 +23,7 @@ def index():
                                  storage=storage['paths'],
                                  total_storage=storage['total'],
                                  plex_transcodes=0,
+                                 weather=weather,
                                  time=datetime.datetime.now() - t1)
 
 
