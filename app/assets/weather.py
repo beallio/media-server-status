@@ -24,6 +24,7 @@ class ForecastData(object):
         output = dict(current_summary=current['summary'],
                       current_summary_icon=self._get_weather_icons(current['icon']),
                       current_temp=u'{:0.0f}°'.format(round(current['temperature'], 0)),
+                      feels_like_temp=u'{:0.0f}°'.format(round(current['apparentTemperature'], 0)),
                       current_windspeed='{:0.0f}'.format(round(current['windSpeed'], 0)),
                       minutely_summary=minutely['summary'],
                       hourly_summary=hourly['summary'],
@@ -59,9 +60,8 @@ class ForecastData(object):
 
     @staticmethod
     def _get_wind_bearing_text(degrees):
-        norm = 22.5
         # normalize windbearing so N starts at 0 degrees
-        deg_norm = (float(degrees) + norm) / norm
+        deg_norm = (float(degrees) + 11.25) / 22.5
         # convert range of windbearing degrees to lookup patterns
         deg_norm_lookup = int(deg_norm) + int((deg_norm // 1) > 0)
         direction_mappings = {1: ('North', 'N'),
