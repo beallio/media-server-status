@@ -1,13 +1,15 @@
-<table class="center">
-    <tbody>
-    {% for server, mappings in server_status.iteritems() %}
-    <tr class="spaceUnder">
-        <td class="exoextralight services_btns">{{ mappings.title }}</td>
-        <td class="btn_mod"><a {% if mappings.external_url %} href="{{ mappings.external_url }}" target="_blank"
-            {% else %} href=# {% endif %} class="{{ mappings.css_class }}" id="{{ server }}_status">
-            <span class="{{ mappings.icon }}" id="{{ server }}_status-icon"></span> {{ mappings.text }}</a>
-        </td>
-    </tr>
-    {% endfor %}
-    </tbody>
-</table>
+<div class="panel-body">
+    <table class="center">
+        <tbody>
+        {% for server, mappings in values.iteritems() %}
+        <tr class="spaceUnder">
+            <td class="exoextralight services_btns">{{ mappings.title }}</td>
+            <td class="btn_mod"><a {% if mappings.external_url %} href="{{ mappings.external_url }}" target="_blank"
+                {% else %} href=# {% endif %} class="{{ mappings.css_class }}" id="{{ server }}_status">
+                <span class="{{ mappings.icon }}" id="{{ server }}_status-icon"></span> {{ mappings.text }}</a>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>

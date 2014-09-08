@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from app.assets import services, weather as Weather
+from app.assets import services as Services, weather as Weather
 from app.assets.services import CheckCrashPlan, SubSonic, ServerSync, Plex
 from app.assets.system_info import GetSystemInfo, get_network_speed, get_ping, get_wan_ip, get_partitions_space, \
     get_total_system_space
@@ -35,7 +35,7 @@ def ip_address():
     return _log_debug(output)
 
 
-def services_status():
+def services():
     servers = [Plex(config.PLEX_INFO), SubSonic(config.SUBSONIC_INFO), ServerSync(config.SERVERSYNC_INFO),
                CheckCrashPlan(config.CRASHPLAN_INFO)]
     servers_mapped = [getattr(s, 'getStatusMapping') for s in servers]
@@ -46,9 +46,9 @@ def services_status():
     return _log_debug(output)
 
 
-def media_results():
+def media():
     plex_server_creds = config.PLEX_INFO
-    s = services.SubSonic(config.SUBSONIC_INFO)
+    s = Services.SubSonic(config.SUBSONIC_INFO)
     output = s.getNowPlayingOrRecentlyAdded()
     return _log_debug(output)
 

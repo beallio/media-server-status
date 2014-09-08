@@ -26,7 +26,13 @@ $(function(){
         var $systeminfo = $(".system-info");
         var $storage = $(".storage");
         var $weather = $(".weather");
+        var $services = $(".services");
 
+        var load_systeminfo = $systeminfo.load("html/system_info");
+        var load_storage = $storage.load("html/storage");
+        var load_services = $services.load("html/services");
+        var load_weather = $weather.load("html/weather");
+        
         function get_server_ip() {
             $.getJSON( api_base_url + "ip_address", function(data)
                 {
@@ -73,9 +79,11 @@ $(function(){
        };
 
         // Load at start of page
-        $systeminfo.load("html/system_info");
-        $storage.load("html/storage");
-        $weather.load("html/weather");
+        load_systeminfo;
+        load_storage;
+        load_services;
+        load_weather;
+        
         update_network_speed();
         update_ping();
         get_server_ip();
@@ -84,8 +92,7 @@ $(function(){
         // Refresh every 30 seconds
         var refreshId = setInterval(function()
         {
-            $systeminfo.load("html/system_info")
-            $weather.load("html/weather");
+            load_systeminfo;
         }, 30000);
 
         // Refresh every 1 minute
@@ -100,8 +107,9 @@ $(function(){
         {
             get_server_ip();
             get_client_ip();
-            $storage.load("html/storage");
-            $weather.load("html/weather");
+            load_storage;
+            load_weather;
+            load_services;
         }, 600000);
     });
 

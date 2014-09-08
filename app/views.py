@@ -11,11 +11,9 @@ from assets import api_functions
 @app.route('/index')
 def index():
     t1 = datetime.datetime.now()
-    media_results = api_functions.media_results()
-    server_status = api_functions.services_status()
+    media_results = api_functions.media()
     return render_template('index.html',
                            results=media_results,
-                           server_status=server_status,
                            time=datetime.datetime.now() - t1)
 
 
