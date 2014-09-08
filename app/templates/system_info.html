@@ -1,10 +1,6 @@
-<div class="panel-heading toggler" id="toggler-systeminfo">
-    <h4 class="panel-title exoextralight">
-        System
-    </h4>
-</div>
+{% set plex_transcodes = 0 %}
 <div class="panel-body" id="systeminfo">
-    {% include "load.html" %}
-    {% include "memory.html" %}
-    {% include "uptime.html" %}
+    {% include "load.html" ignore missing with context %}
+    {% include "memory.html" ignore missing with context %}
+    {% include "uptime.html" ignore missing with context %}
 </div>

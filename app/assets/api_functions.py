@@ -1,33 +1,38 @@
 from collections import OrderedDict
 
-from app.assets import services, weather
+from app.assets import services, weather as Weather
 from app.assets.services import CheckCrashPlan, SubSonic, ServerSync, Plex
 from app.assets.system_info import GetSystemInfo, get_network_speed, get_ping, get_wan_ip, get_partitions_space, \
     get_total_system_space
-from app import test_data as config
+from app import app, test_data as config
 
 
 def system_info():
     get_system_info = GetSystemInfo()
-    return get_system_info.get_info()
+    output = get_system_info.get_info()
+    return _log_debug(output)
 
 
 def network_speed():
-    return get_network_speed()
+    output = get_network_speed()
+    return _log_debug(output)
 
 
 def ping():
-    return dict(ping='{:.0f}'.format(get_ping()))
+    output = dict(ping='{:.0f}'.format(get_ping()))
+    return _log_debug(output)
 
 
 def storage():
     paths = get_partitions_space(config.PARTITIONS)
-    return dict(total=get_total_system_space(),
-                paths=paths)
+    output = dict(total=get_total_system_space(),
+                  paths=paths)
+    return _log_debug(output)
 
 
 def ip_address():
-    return dict(wan_ip=get_wan_ip(), internal_ip=config.INTERNAL_IP)
+    output = dict(wan_ip=get_wan_ip(), internal_ip=config.INTERNAL_IP)
+    return _log_debug(output)
 
 
 def services_status():
@@ -37,15 +42,23 @@ def services_status():
     servers_dict = OrderedDict()
     for s in servers_mapped:
         servers_dict = OrderedDict(servers_dict.items() + s.items())
-    return servers_dict
+    output = servers_dict
+    return _log_debug(output)
 
 
 def media_results():
     plex_server_creds = config.PLEX_INFO
     s = services.SubSonic(config.SUBSONIC_INFO)
-    return s.getNowPlayingOrRecentlyAdded()
+    output = s.getNowPlayingOrRecentlyAdded()
+    return _log_debug(output)
 
 
-def weather_data():
-    w = weather.ForecastData(config.WEATHER)
-    return w.getForecastData()
+def weather():
+    w = Weather.ForecastData(config.WEATHER)
+    output = w.getForecastData()
+    return _log_debug(output)
+
+
+def _log_debug(output):
+    app.logger.debug(output)
+    return output

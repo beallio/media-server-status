@@ -1,44 +1,40 @@
-<div class="panel panel-default">
-    <div class="panel-heading toggler" id="toggler-weather">
-        <h4 class="panel-title exoextralight">
-            Weather
-        </h4>
-    </div>
-    <div class="panel-body slider" id="weather">
-        <div id="left_column_top">
-            <ul class="list-inline" style="margin-bottom:-20px">
-                <li>
-                    <h1 data-icon="{{ weather.current_summary_icon }}"
-                        style="font-size:500%;margin:0px -10px 20px -5px"></h1>
-                </li>
-                <li>
-                    <ul class="list-unstyled">
-                        <li>
-                            <h1 class="exoregular" style="margin:0px">{{ weather.current_temp }}</h1>
-                        </li>
-                        <li>
-                            <h4 class="exoregular" style="margin:0px;padding-right:10px;width:80px">{{
-                                weather.current_summary }}</h4>
-                        </li>
-                    </ul>
-                </li>
-            </ul>
-            <h4 class="exoextralight" style="margin-top:0px">Wind: {{ weather.current_windspeed }} mph {% if
-                weather.current_windbearing %}
-                from the {{ weather.current_windbearing.abbrev }}{% endif %}</h4>
-            <h4 class="exoregular">Next Hour</h4>
-            <h5 class="exoextralight" style="margin-top:10px">{{ weather.minutely_summary }}</h5>
-            <h4 class="exoregular">Next 24 Hours</h4>
-            <h5 class="exoextralight" style="margin-top:10px">{{ weather.hourly_summary }}</h5>
-            <h4 class="exoregular">The Sun</h4>
-            <h5 class="exoextralight" style="margin-top:10px">Rises at {{ weather.sunrise }}</h5>
-            <h5 class="exoextralight" style="margin-top:10px">Sets at {{ weather.sunset }}</h5>
+<div class="panel-body slider" id="weather">
+    <!-- <div id="refresh-weather" style="position: absolute; right: 20px; top: 60px; color: #E0E0E0;"><span class="glyphicon glyphicon-refresh"></span>
+     </div> -->
+    <div id="left_column_top">
+        <ul class="list-inline" style="margin-bottom:-20px; margin-top:-15px;">
+            <li>
+                <h1 data-icon="{{ values.current_summary_icon }}"
+                    style="font-size:500%;margin:0px 10px 20px -5px"></h1>
+            </li>
+            <li>
+                <ul class="list-unstyled">
+                    <li>
+                        <h1 class="exoregular" style="margin:0px">{{ values.current_temp }}</h1>
+                    </li>
+                    <li>
+                        <h4 class="exoregular" style="margin:0px;padding-right:10px;width:80px">{{
+                            values.current_summary }}</h4>
+                    </li>
+                    <!--<li><h5 class="exoextralight" style="margin-top:10px">Feels like {{ values.feels_like_temp }}</h5></li> -->
+                </ul>
+            </li>
+        </ul>
 
-            <p class="text-right no-link-color" style="margin-bottom:-10px">
-                <small>
-                    <a href="{{ weather.url_link }}">Forecast.io</a></small>
-            </p>
-        </div>
+        <h4 class="exoextralight" style="margin-top:0px">Wind: {{ values.current_windspeed }} mph {% if
+            values.current_windbearing %}
+            from the {{ values.current_windbearing.abbrev }}{% endif %}</h4>
+        <h4 class="exoregular">Next Hour</h4>
+        <h5 class="exoextralight" style="margin-top:10px">{{ values.minutely_summary }}</h5>
+        <h4 class="exoregular">Next 24 Hours</h4>
+        <h5 class="exoextralight" style="margin-top:10px">{{ values.hourly_summary }}</h5>
+        <h4 class="exoregular">The Sun</h4>
+        <h5 class="exoextralight" style="margin-top:10px">Rises at {{ values.sunrise }}</h5>
+        <h5 class="exoextralight" style="margin-top:10px">Sets at {{ values.sunset }}</h5>
+
+        <p class="text-right no-link-color" style="margin-bottom:-10px">
+            <small><a href="{{ values.url_link }}">Forecast.io</a></small>
+        </p>
     </div>
 </div>
 

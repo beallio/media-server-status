@@ -5,14 +5,14 @@
 <div id="memory">
     <div class="exoregular">
         <div id="memory-tooltip" class="progress" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title=""
-             data-original-title="{{ '{0:,.0f} MB free out of {1:,.0f} MB'.format(sys_info['mem_available'], sys_info['mem_total']) }}">
+             data-original-title="{{ '{0:,.0f} MB free out of {1:,.0f} MB'.format(values['mem_available'], values['mem_total']) }}">
             <div id="progress-bar-min" class="progress-bar"
-                 style="width: {{ sys_info['mem_bars']['xmin'] }}%;">{{ sys_info['mem_used_pct'] }}%
+                 style="width: {{ values['mem_bars']['xmin'] }}%;">{{ values['mem_used_pct'] }}%
             </div>
             <div id="progress-bar-mid" class="progress-bar progress-bar-warning progress-bar-striped"
-                 style="width: {{ sys_info['mem_bars']['xmid'] }}%;"></div>
+                 style="width: {{ values['mem_bars']['xmid'] }}%;"></div>
             <div id="progress-bar-max" class="progress-bar progress-bar-danger progress-bar-striped"
-                 style="width: {{ sys_info['mem_bars']['xmax'] }}%;"></div>
+                 style="width: {{ values['mem_bars']['xmax'] }}%;"></div>
         </div>
     </div>
 </div>

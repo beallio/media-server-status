@@ -43,7 +43,6 @@ class Service(object):
                 output[service_name]['external_url'] = self.getExternalURL
         except KeyError:
             pass
-        print output
         return output
 
     def _add_service_name_to_status_mapping(self):

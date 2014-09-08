@@ -18,6 +18,7 @@
     <link rel="shortcut icon" href="static/ico/favicon.ico">
     <script type=text/javascript>
         $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+
     </script>
 </head>
 <body>
@@ -28,7 +29,14 @@
                 <!-- Left sidebar -->
                 <div class="col-md-3" style="padding-top: 20px;">
                     <!-- Weather -->
-                    {% include "weather.html" %}
+                    <div class="panel panel-default">
+                        <div class="panel-heading toggler" id="toggler-weather">
+                            <h4 class="panel-title exoextralight">
+                                Weather
+                            </h4>
+                        </div>
+                        <div class="weather"></div>
+                    </div>
                     <!-- Bandwidth -->
                     <div class="panel panel-default">
                         <div class="panel-heading toggler" id="toggler-bandwidth">
@@ -62,9 +70,14 @@
                 </div>
                 <!-- Right sidebar -->
                 <div class="col-md-3" style="padding-top: 20px;">
-                    <!-- Load Panel -->
+                    <!-- System info / Load Panel -->
                     <div class="panel panel-default">
-                        {% include "system_info.html" ignore missing with context %}
+                        <div class="panel-heading toggler" id="toggler-systeminfo">
+                            <h4 class="panel-title exoextralight">
+                                System
+                            </h4>
+                        </div>
+                        <div class="system-info"></div>
                     </div>
                     <!-- Storage Panel -->
                     <div class="panel panel-default">
@@ -73,7 +86,7 @@
                                 Storage
                             </h4>
                         </div>
-                        {% include "storage.html" ignore missing with context %}
+                        <div class="storage"></div>
                     </div>
                 </div>
             </div>
