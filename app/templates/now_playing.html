@@ -22,7 +22,7 @@
                 <div class="thumbnail">
                     <!-- Wrapper for slides -->
                     <div class="carousel-inner">
-                        {% for item in results.now_playing %}
+                        {% for item in values.now_playing %}
                         {% if loop.first %}
                         <div class="item active">
                             <a href="http://beallio.com/subsonic/main.view?id={{ item.id }}" target="main">
@@ -77,8 +77,6 @@
         $('.carousel').carousel({
             interval: 30000
         })
-
-
 
         </script>
     </div>

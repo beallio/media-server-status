@@ -19,6 +19,7 @@
     <script type=text/javascript>
         $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
 
+
     </script>
 </head>
 <body>
@@ -61,11 +62,7 @@
                 </div>
                 <!-- Center Area -->
                 <div class="col-md-6">
-                    {% if results.now_playing %}
-                    {% include "now_playing.html" ignore missing with context %}
-                    {% elif results.recently_added %}
-                    {% include "recently_added.html" ignore missing with context %}
-                    {% endif %}
+                    <div class="media"></div>
                 </div>
                 <!-- Right sidebar -->
                 <div class="col-md-3" style="padding-top: 20px;">

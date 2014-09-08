@@ -189,19 +189,11 @@ class SubSonic(Service):
         :return: entry
         """
         assert type(entry) == dict
-        entry['coverartURL'] = '{url}?u={user}&p={pw}&v={ver}&c={app}&id={covertArtID}'.format(
-            url='{url}getCoverArt.view'.format(url=self.server_full_url),
-            user=self.server_info['user'],
-            pw=self.server_info['password'],
-            ver=self.server_info['api'],
-            app=self.server_info['appname'],
-            covertArtID=entry['coverArt'])
         entry['coverArtLocalLink'] = self._create_cover_art_file(entry['coverArt'])
         try:
-            """ Return progress on currently playing song(s).  No good way to do this since Subsonic
-            doesn't have access to this info through it's API.  Calculate progress by taking last time song was accessed
-            and divide by progress
-            """
+            # Return progress on currently playing song(s).  No good way to do this since Subsonic
+            # doesn't have access to this info through it's API.  Calculate progress by taking last time
+            # song was accessed divide by progress
             entry['progress'] = min(float(entry['minutesAgo']) / float(entry['duration'] / 60), 1)
         except KeyError:
             entry['progress'] = 1

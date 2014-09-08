@@ -13,7 +13,7 @@
                 <div class="thumbnail">
                     <!-- Wrapper for slides -->
                     <div class="carousel-inner">
-                        {% for item in results.recently_added %}
+                        {% for item in values.recently_added %}
                         {% if loop.first %}
                         <div class="item active">
                             <img src="{{item.coverArtLocalLink}}"/>

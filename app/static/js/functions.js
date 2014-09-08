@@ -27,12 +27,14 @@ $(function(){
         var $storage = $(".storage");
         var $weather = $(".weather");
         var $services = $(".services");
+        var $media = $(".media");
 
         var load_systeminfo = $systeminfo.load("html/system_info");
         var load_storage = $storage.load("html/storage");
         var load_services = $services.load("html/services");
         var load_weather = $weather.load("html/weather");
-        
+        var load_media = $media.load("html/media");
+
         function get_server_ip() {
             $.getJSON( api_base_url + "ip_address", function(data)
                 {
@@ -47,6 +49,7 @@ $(function(){
                 }) ;
         }
 
+        // FUNCTIONS TO UPDATE NETWORK SPEED AND PING
         function update_ping() {
             $.getJSON( api_base_url + "ping", function(data)
                 {
@@ -71,6 +74,8 @@ $(function(){
             }) ;
        };
 
+       // END FUNCTIONS TO UPDATE NETWORK SPEED AND PING
+
        function on_local_network(url) {
             var client_ip = getJson('http://api.hostip.info/get_json.php').ip;
             var server_ip = getJson(api_base_url + "ip_address").wan_ip;
@@ -83,6 +88,7 @@ $(function(){
         load_storage;
         load_services;
         load_weather;
+        load_media;
         
         update_network_speed();
         update_ping();
@@ -100,6 +106,7 @@ $(function(){
         {
             update_network_speed();
             update_ping();
+            load_media;
         }, 60000);
 
         // Refresh every 10 minutes
