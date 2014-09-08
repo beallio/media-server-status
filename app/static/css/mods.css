@@ -118,3 +118,44 @@ a.btn_mod {
     width: 100%;
     margin: 0 auto
 }
+
+.weather-bottom {
+    clear:both;
+    margin-top:10px
+}
+
+.weather-bottom h5 {
+    margin-top: 10px;
+}
+
+.weather-bottom p {
+    margin-bottom: -10px;
+}
+
+.weather-icon {
+    float:left;
+    width: 30%;
+    padding-left: 10px;
+}
+
+.temp-data {
+  padding-top: 0px;
+  background: none;
+}
+
+.temp-data h1, h4 {
+    margin: 0px;
+}
+
+.temp-data h5 {
+    margin-top: 10px;
+}
+
+.weather-icon h1 {
+    font-size: 500%;
+    padding: 0px;
+    margin: 0px;
+}
+
+
+

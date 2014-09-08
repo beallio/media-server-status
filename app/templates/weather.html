@@ -2,39 +2,32 @@
     <!-- <div id="refresh-weather" style="position: absolute; right: 20px; top: 60px; color: #E0E0E0;"><span class="glyphicon glyphicon-refresh"></span>
      </div> -->
     <div id="left_column_top">
-        <ul class="list-inline" style="margin-bottom:-20px; margin-top:-15px;">
-            <li>
-                <h1 data-icon="{{ values.current_summary_icon }}"
-                    style="font-size:500%;margin:0px 10px 20px -5px"></h1>
-            </li>
-            <li>
-                <ul class="list-unstyled">
-                    <li>
-                        <h1 class="exoregular" style="margin:0px">{{ values.current_temp }}</h1>
-                    </li>
-                    <li>
-                        <h4 class="exoregular" style="margin:0px;padding-right:10px;width:80px">{{
-                            values.current_summary }}</h4>
-                    </li>
-                    <!--<li><h5 class="exoextralight" style="margin-top:10px">Feels like {{ values.feels_like_temp }}</h5></li> -->
-                </ul>
-            </li>
-        </ul>
+        <div class="parent">
+            <div class="weather-icon">
+                <h1 data-icon="{{ values.current_summary_icon }}"></h1>
+            </div>
+            <div class="temp-data">
+                <h1 class="exoregular">{{ values.current_temp }}</h1>
+                <h4 class="exoregular">{{ values.current_summary }}</h4>
+                <h5 class="exoextralight">Feels like {{ values.feels_like_temp }}</h5>
+            </div>
+        </div>
+        <div class="weather-bottom">
+            <h4 class="exoextralight" style="margin-bottom:10px">Wind: {{ values.current_windspeed }} mph {% if
+                values.current_windbearing %}
+                from the {{ values.current_windbearing.abbrev }}{% endif %}</h4>
+            <h4 class="exoregular">Next Hour</h4>
+            <h5 class="exoextralight">{{ values.minutely_summary }}</h5>
+            <h4 class="exoregular">Next 24 Hours</h4>
+            <h5 class="exoextralight">{{ values.hourly_summary }}</h5>
+            <h4 class="exoregular">The Sun</h4>
+            <h5 class="exoextralight">Rises at {{ values.sunrise }}</h5>
+            <h5 class="exoextralight">Sets at {{ values.sunset }}</h5>
 
-        <h4 class="exoextralight" style="margin-top:0px">Wind: {{ values.current_windspeed }} mph {% if
-            values.current_windbearing %}
-            from the {{ values.current_windbearing.abbrev }}{% endif %}</h4>
-        <h4 class="exoregular">Next Hour</h4>
-        <h5 class="exoextralight" style="margin-top:10px">{{ values.minutely_summary }}</h5>
-        <h4 class="exoregular">Next 24 Hours</h4>
-        <h5 class="exoextralight" style="margin-top:10px">{{ values.hourly_summary }}</h5>
-        <h4 class="exoregular">The Sun</h4>
-        <h5 class="exoextralight" style="margin-top:10px">Rises at {{ values.sunrise }}</h5>
-        <h5 class="exoextralight" style="margin-top:10px">Sets at {{ values.sunset }}</h5>
-
-        <p class="text-right no-link-color" style="margin-bottom:-10px">
-            <small><a href="{{ values.url_link }}">Forecast.io</a></small>
-        </p>
+            <p class="text-right no-link-color">
+                <small><a href="{{ values.url_link }}">Forecast.io</a></small>
+            </p>
+        </div>
     </div>
 </div>
 
