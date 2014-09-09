@@ -4,7 +4,8 @@
 <hr class="hr_break">
 <div style="margin-bottom:10px">
     <div class="exolight" id="uptime">
-        {{ values['uptime_formatted']['days'] }}, {{ values['uptime_formatted']['hours'] }},
+        {% if values['uptime_formatted']['days'] %}{{ values['uptime_formatted']['days'] }}, {% endif %}
+        {% if values['uptime_formatted']['hours'] %}{{ values['uptime_formatted']['hours'] }}, {% endif %}
         {{ values['uptime_formatted']['min'] }}
     </div>
 </div>

@@ -82,14 +82,27 @@ def get_ping(host="8.8.8.8", kind='avg', num=4):
 
 def get_system_uptime():
     def append_type(x, kind):
+        """
+        Return 0 if days/hours/minutes equals 0 otherwise append correct plural "s" to type
+        ex. if systems up for 2 hours, returns "2 hours" likewise return "1 hour" if system has been up for 1 hour
+        """
         assert type(x) is int and type(kind) is str
-        return '{} {}'.format(str(x), kind + 's' if x != 1 else kind)
+        if x == 0:
+            return x
+        else:
+            return '{} {}'.format(str(x), kind + 's' if x != 1 else kind)
 
     boot_time = datetime.datetime.fromtimestamp(psutil.boot_time()).replace(microsecond=0)
     time_now = datetime.datetime.now().replace(microsecond=0)
     delta = time_now - boot_time
     formatted_time = str(delta).split(',')
-    hours = formatted_time[1].strip().split(':')
+    try:
+        # System's been up a day or more
+        hours = formatted_time[1].strip().split(':')
+    except IndexError:
+        # System's been up for less than day
+        hours = formatted_time[0].strip().split(':')
+        formatted_time[0] = 0
     hours.pop(2)
     hours, mins = [int(hour) for hour in hours]
     formatted_time = dict(days=formatted_time[0], hours=append_type(hours, 'hour'), min=append_type(mins, 'minute'))
