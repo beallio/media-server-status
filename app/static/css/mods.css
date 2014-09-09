@@ -121,7 +121,7 @@ a.btn_mod {
 
 .weather-bottom {
     clear:both;
-    margin-top:10px
+    margin-top:-20px
 }
 
 .weather-bottom h5 {
@@ -130,32 +130,20 @@ a.btn_mod {
 
 .weather-bottom p {
     margin-bottom: -10px;
-}
-
-.weather-icon {
-    float:left;
-    width: 30%;
-    padding-left: 10px;
-}
-
-.temp-data {
-  padding-top: 0px;
-  background: none;
-}
-
-.temp-data h1, h4 {
-    margin: 0px;
-}
-
-.temp-data h5 {
-    margin-top: 10px;
+    margin-right: 5px;
 }
 
 .weather-icon h1 {
-    font-size: 500%;
-    padding: 0px;
-    margin: 0px;
+    font-size: 900%;
+    margin-bottom: 0px;
+    margin-top: 0px;
 }
 
+#weather.panel-body.slider {
+    padding-top: 0px;
+}
 
+.extra-bottom {
+    margin-bottom: 15px;
+}
 
