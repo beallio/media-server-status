@@ -60,5 +60,6 @@ def weather():
 
 
 def _log_debug(output):
-    app.logger.debug(output)
+    if app.config['TESTING']:
+        app.logger.debug(output)
     return output

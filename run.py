@@ -2,4 +2,5 @@
 
 from app import app
 
-app.run(debug=True)
+app.config.update(DEBUG=True, TESTING=True)
+app.run()
