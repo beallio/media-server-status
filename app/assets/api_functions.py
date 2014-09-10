@@ -4,7 +4,8 @@ from app.assets import services as Services, weather as Weather
 from app.assets.services import CheckCrashPlan, SubSonic, ServerSync, Plex
 from app.assets.system_info import GetSystemInfo, get_network_speed, get_ping, get_wan_ip, get_partitions_space, \
     get_total_system_space
-from app import app, test_data as config
+from app import app
+import test_data as config
 
 
 def system_info():
