@@ -2,7 +2,8 @@ import flask
 
 
 app = flask.Flask(__name__)
-from app import views, assets
+import views
+import assets
 
 # handler = logging.StreamHandler()
 #handler.setLevel(logging.DEBUG)
