@@ -4,26 +4,26 @@
     <div id="container">
         <div class="row" style="margin-top: 0px;">
             <div class="col-md-6 weather-icon">
-            <h1 data-icon="{{ values.current_summary_icon }}"></h1>
+                <h1 data-icon="{{ values.current_summary_icon }}"></h1>
             </div>
             <div class="col-md-6">
-            <h1 class="exoregular">{{ values.current_temp }}</h1>
-                <h4 class="exoregular">{{ values.current_summary }}</h4>
-                <h5 class="exoextralight">Feels like {{ values.feels_like_temp }}</h5>
+                <h1 class="regular">{{ values.current_temp }}</h1>
+                <h4 class="regular">{{ values.current_summary }}</h4>
+                <h5 class="extralight">Feels like {{ values.feels_like_temp }}</h5>
             </div>
         </div>
         <div class="row">
             <div class="weather-bottom">
-                <h4 class="exoextralight extra-bottom">Wind: {{ values.current_windspeed }} mph {% if
+                <h4 class="extralight extra-bottom">Wind: {{ values.current_windspeed }} mph {% if
                     values.current_windbearing %}
                     from the {{ values.current_windbearing.abbrev }}{% endif %}</h4>
-                <h4 class="exoregular">Next Hour</h4>
-                <h5 class="exoextralight extra-bottom">{{ values.minutely_summary }}</h5>
-                <h4 class="exoregular">Next 24 Hours</h4>
-                <h5 class="exoextralight extra-bottom">{{ values.hourly_summary }}</h5>
-                <h4 class="exoregular">The Sun</h4>
-                <h5 class="exoextralight">Rises at {{ values.sunrise }}</h5>
-                <h5 class="exoextralight">Sets at {{ values.sunset }}</h5>
+                <h4 class="regular">Next Hour</h4>
+                <h5 class="extralight extra-bottom">{{ values.minutely_summary }}</h5>
+                <h4 class="regular">Next 24 Hours</h4>
+                <h5 class="extralight extra-bottom">{{ values.hourly_summary }}</h5>
+                <h4 class="regular">The Sun</h4>
+                <h5 class="extralight">Rises at {{ values.sunrise }}</h5>
+                <h5 class="extralight">Sets at {{ values.sunset }}</h5>
 
                 <p class="text-right no-link-color extra-bottom">
                     <small><a href="{{ values.url_link }}">Forecast.io</a></small>

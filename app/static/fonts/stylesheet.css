@@ -3,7 +3,7 @@
 
 
 @font-face {
-    font-family: 'exoextralight';
+    font-family: 'extralight';
     src: url('exo-extralight-webfont.eot');
     src: url('exo-extralight-webfont.eot?#iefix') format('embedded-opentype'),
          url('exo-extralight-webfont.woff') format('woff'),
@@ -18,7 +18,7 @@
 
 
 @font-face {
-    font-family: 'exolight';
+    font-family: 'light';
     src: url('exo-light-webfont.eot');
     src: url('exo-light-webfont.eot?#iefix') format('embedded-opentype'),
          url('exo-light-webfont.woff') format('woff'),
@@ -33,7 +33,7 @@
 
 
 @font-face {
-    font-family: 'exoregular';
+    font-family: 'regular';
     src: url('exo-regular-webfont.eot');
     src: url('exo-regular-webfont.eot?#iefix') format('embedded-opentype'),
          url('exo-regular-webfont.woff') format('woff'),
@@ -48,7 +48,7 @@
 
 
 @font-face {
-    font-family: 'exoblack';
+    font-family: 'black';
     src: url('exo-black-webfont.eot');
     src: url('exo-black-webfont.eot?#iefix') format('embedded-opentype'),
          url('exo-black-webfont.woff') format('woff'),
@@ -63,7 +63,7 @@
 
 
 @font-face {
-    font-family: 'exobold';
+    font-family: 'bold';
     src: url('exo-bold-webfont.eot');
     src: url('exo-bold-webfont.eot?#iefix') format('embedded-opentype'),
          url('exo-bold-webfont.woff') format('woff'),
@@ -78,7 +78,7 @@
 
 
 @font-face {
-    font-family: 'exomedium';
+    font-family: 'medium';
     src: url('exo-medium-webfont.eot');
     src: url('exo-medium-webfont.eot?#iefix') format('embedded-opentype'),
          url('exo-medium-webfont.woff') format('woff'),
@@ -93,7 +93,7 @@
 
 
 @font-face {
-    font-family: 'exoextrabold';
+    font-family: 'extrabold';
     src: url('exo-extrabold-webfont.eot');
     src: url('exo-extrabold-webfont.eot?#iefix') format('embedded-opentype'),
          url('exo-extrabold-webfont.woff') format('woff'),
@@ -108,7 +108,7 @@
 
 
 @font-face {
-    font-family: 'exodemibold';
+    font-family: 'demibold';
     src: url('exo-semibold-webfont.eot');
     src: url('exo-semibold-webfont.eot?#iefix') format('embedded-opentype'),
          url('exo-semibold-webfont.woff') format('woff'),

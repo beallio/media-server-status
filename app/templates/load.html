@@ -1,5 +1,5 @@
 <!-- Transcode sessions title & badge div-->
-<h4 class="panel-title exoextralight">
+<h4 class="panel-title extralight">
     Load
     {% if plex_transcodes > 0 %}
     <!-- each order of magnitude should increase notification box by 10px, base is 20 pxs -->
@@ -13,7 +13,7 @@
 <hr class="hr_break">
 <div id="system_load">
     <!-- 1 min -->
-    <div class="exolight">1 min:
+    <div class="light">1 min:
         <span id="1-min-load">{{ '{0:0.0%}'.format(values['load_avg'][0]) }}</span>
 
         <div class="progress">
@@ -22,7 +22,7 @@
         </div>
     </div>
     <!-- 5 min -->
-    <div class="exolight">5 min:
+    <div class="light">5 min:
         <span id="5-min-load">{{ '{0:0.0%}'.format(values['load_avg'][1]) }}</span>
 
         <div class="progress">
@@ -32,7 +32,7 @@
         </div>
     </div>
     <!-- 15 min -->
-    <div class="exolight">15 min:
+    <div class="light">15 min:
         <span id="15-min-load">{{ '{0:0.0%}'.format(values['load_avg'][2]) }}</span>
 
         <div class="progress">

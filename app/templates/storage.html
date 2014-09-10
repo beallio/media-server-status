@@ -1,5 +1,5 @@
 <div class="panel-body" id="storage" style="margin-bottom:-10px">
-    <div class="exolight">Total Capacity: <span id="total-storage">{{ '{:0.0f}%'.format(values.total['pct']) }}</span>
+    <div class="light">Total Capacity: <span id="total-storage">{{ '{:0.0f}%'.format(values.total['pct']) }}</span>
 
         <div id="tooltip-total" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title="" class="progress"
              data-original-title="{{ values.total['free'] }} free out of {{ values.total['total'] }}">
@@ -8,7 +8,7 @@
     </div>
     {% for disk, values in values.paths.iteritems() %}
     <!-- {{ disk }} -->
-    <div class="exolight">{{ disk }} Capacity: <span
+    <div class="light">{{ disk }} Capacity: <span
             id="{{ disk }}-storage">{{ '{:0.0f}%'.format(values['pct']) }}</span>
 
         <div id="tooltip-{{ disk }}" rel="tooltip" data-toggle="tooltip" data-placement="bottom" title=""

@@ -3,7 +3,7 @@
         <tbody>
         {% for server, mappings in values.iteritems() %}
         <tr class="spaceUnder">
-            <td class="exoextralight services_btns">{{ mappings.title }}</td>
+            <td class="extralight services_btns">{{ mappings.title }}</td>
             <td class="btn_mod"><a {% if mappings.external_url %} href="{{ mappings.external_url }}" target="_blank"
                 {% else %} href=# {% endif %} class="{{ mappings.css_class }}" id="{{ server }}_status">
                 <span class="{{ mappings.icon }}" id="{{ server }}_status-icon"></span> {{ mappings.text }}</a>

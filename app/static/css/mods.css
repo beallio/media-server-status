@@ -13,18 +13,18 @@ body {
             color:#999999;
         }
 
-    .exoextralight {
-        font-family:"exoextralight";
+    .extralight {
+        font-family:"extralight";
         }
-    .exolight {
-    font-family:"exolight";
+    .light {
+    font-family:"light";
 }
 [data-icon]:before {
 font-family: 'MeteoconsRegular';
 content: attr(data-icon);
 }
-.exoregular {
-font-family:"exoregular";
+.regular {
+font-family:"regular";
 }
 
 /* Changes carousel slide transition to fade transition
@@ -108,7 +108,7 @@ a.btn_mod {
     margin-top: 10px;
     margin-bottom: 0px;
     float: left;
-    font-family: "exoextralight";
+    font-family: "extralight";
     text-align: left;
 }
 
