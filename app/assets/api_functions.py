@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+from app import app
 from app.assets import services as Services, weather as Weather
 from app.assets.services import CheckCrashPlan, SubSonic, ServerSync, Plex
 from app.assets.system_info import GetSystemInfo, get_network_speed, get_ping, get_wan_ip, get_partitions_space, \
@@ -60,6 +61,5 @@ def weather():
 
 
 def _log_debug(output):
-    if app.config['TESTING']:
-        app.logger.debug(output)
+    app.logger.debug(output)
     return output

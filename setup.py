@@ -1,6 +1,14 @@
 #!/usr/bin/env python
+import os
 
 from distutils.core import setup
+
+readme_file = 'README.md'
+readme_file_full_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), readme_file)
+with open(readme_file_full_path, 'r') as f:
+    readme_contents = f.read()
+if not readme_contents:
+    readme_contents = ''
 
 setup(name='server-status',
       version='0.0.1',
@@ -8,7 +16,7 @@ setup(name='server-status',
       author_email='david@beallio.com',
       url='http://ww.beallio.com',
       description='Server Status',
-      long_description='Server Status',
+      long_description='{}'.format(readme_contents),
       packages=['app'],
       package_dir={'app': 'app'},
       classifiers=[
@@ -22,5 +30,4 @@ setup(name='server-status',
           'Topic :: Software Development :: Libraries :: Python Modules',
           'Topic :: Software Development :: Libraries',
           'Topic :: System',
-      ]
-)
+      ])
