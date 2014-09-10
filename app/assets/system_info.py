@@ -46,8 +46,9 @@ def get_wan_ip(site='http://myip.dnsdynamic.org/'):
     return urllib2.urlopen(site).read()
 
 
-def get_partitions():
-    partitions = psutil.disk_partitions(all=True)
+def get_partitions(partitions=None):
+    if partitions is None:
+        partitions = psutil.disk_partitions(all=True)
     return {p[1]: psutil.disk_usage(p[1]) for p in partitions if p[0] != 0}
 
 
@@ -144,7 +145,10 @@ def get_total_system_space(digits=1):
     :return: dict
     """
     assert type(digits) is int
-    partitions = get_partitions()
+    all_partitions = psutil.disk_partitions(all=True)
+    # limit total disk space to those paritions mounted in "/dev/"
+    partitions_to_keep = [partition for partition in all_partitions if partition.device.startswith('/dev/')]
+    partitions = get_partitions(partitions_to_keep)
     disk_space = dict(total=sum([partitions[partition].total for partition in partitions]),
                       used=sum([partitions[partition].used for partition in partitions]),
                       free=sum([partitions[partition].free for partition in partitions]))
@@ -163,7 +167,9 @@ def get_partitions_space(partitions, digits=1, sort='alpha'):
     """
     assert type(partitions) is dict
     system_partitions = get_partitions()
-    disk_space = {p: system_partitions[partitions[p]] for p in partitions}
+    # return disk space for each partition listed in config
+    # test if listed partition actually exists in system first to avoid throwing an error
+    disk_space = {p: system_partitions[partitions[p]] for p in partitions if partitions[p] in system_partitions}
     disk_space_formatted = {p: dict(total=convert_bytes(disk_space[p].total, 'GB', True, digits, True),
                                     used=convert_bytes(disk_space[p].used, 'GB', True, digits, True),
                                     free=convert_bytes(disk_space[p].free, 'GB', True, digits, True)) for p in
