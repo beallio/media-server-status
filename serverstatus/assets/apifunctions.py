@@ -1,11 +1,14 @@
 from collections import OrderedDict
+import logging
 
-from app import app
-from app.assets import services as Services, weather as Weather
-from app.assets.services import CheckCrashPlan, SubSonic, ServerSync, Plex
-from app.assets.system_info import GetSystemInfo, get_network_speed, get_ping, get_wan_ip, get_partitions_space, \
+from serverstatus.assets.loggingsetup import config
+from serverstatus.assets import services as Services, weather as Weather
+from serverstatus.assets.services import CheckCrashPlan, SubSonic, ServerSync, Plex
+from serverstatus.assets.sysinfo import GetSystemInfo, get_network_speed, get_ping, get_wan_ip, get_partitions_space, \
     get_total_system_space
-import test_data as config
+
+
+logger = logging.getLogger(__name__)
 
 
 def system_info():
@@ -15,7 +18,7 @@ def system_info():
 
 
 def network_speed():
-    output = get_network_speed()
+    output = get_network_speed(sleep=5)
     return _log_debug(output)
 
 
@@ -37,7 +40,8 @@ def ip_address():
 
 
 def services():
-    servers = [Plex(config.PLEX_INFO), SubSonic(config.SUBSONIC_INFO), ServerSync(config.SERVERSYNC_INFO),
+    servers = [Plex(config.PLEX_INFO), SubSonic(config.SUBSONIC_INFO),
+               ServerSync(config.SERVERSYNC_INFO),
                CheckCrashPlan(config.CRASHPLAN_INFO)]
     servers_mapped = [getattr(s, 'getStatusMapping') for s in servers]
     servers_dict = OrderedDict()
@@ -61,5 +65,5 @@ def weather():
 
 
 def _log_debug(output):
-    app.logger.debug(output)
+    logger.debug(output)
     return output

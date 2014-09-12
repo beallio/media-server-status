@@ -1,11 +1,16 @@
 import os
+import logging
 
 import libsonic
+
+
+logger = logging.getLogger(__name__)
 
 
 class Service(object):
     def __init__(self, service_info):
         assert type(service_info) is dict
+        self.logger = logger
         self.server_info = service_info
         self.SERVICES_STATUS_MAPPING = self._get_status_mappings_dict()
         self.service_name = None
@@ -64,10 +69,16 @@ class Service(object):
 
     @staticmethod
     def _strip_base_path(filepath):
-        delim = '/'
+        def strip_delims(path):
+            delims = ['/', '\\']
+            for char in delims:
+                path = path.strip(char)
+            return path
+
         path = os.path.split(os.path.realpath(__file__))[0]
-        basepath_to_remove = ''.join(path.split(delim)[-2]) + delim
-        return filepath.replace(basepath_to_remove, '')
+        filepath_without_server_path = filepath.replace(path, '')
+        filepath_without_server_path_stripped = strip_delims(filepath_without_server_path)
+        return filepath_without_server_path_stripped
 
     def _test_file_path(self, file_path_key):
         output = None
@@ -113,10 +124,12 @@ class Service(object):
 
 
 class SubSonic(Service):
+    # // TODO Clean up the entry point for the server subdirectory
     def __init__(self, server_info):
         Service.__init__(self, server_info)
+        self.logger.debug('{} class initialized'.format(self.__class__.__name__))
         self.service_name = 'subsonic'
-        self.image_dir = 'app/static/img/tmp/'
+        self.image_dir = 'static/img/tmp/'
         self.conn = libsonic.Connection(baseUrl=self.server_info['url'],
                                         username=self.server_info['user'],
                                         password=self.server_info['password'],
@@ -169,15 +182,17 @@ class SubSonic(Service):
         :return:
         """
         img_data = self.conn.getCoverArt(aid=coverArtID, size=size)
-        cover_dir = os.path.join(self.image_dir, 'covers')
+        cover_dir_short = os.path.join(self.image_dir, 'covers')
+        cover_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), cover_dir_short)
         if not os.path.isdir(cover_dir):
+            self.logger.info('Directory not found. Creating directory: {}'.format(cover_dir))
             os.makedirs(cover_dir)
         filename = 'cover'
         ext = '.jpg'
         short_filepath = filename + str(coverArtID) + '_' + str(size) + ext
         full_filepath = os.path.join(cover_dir, short_filepath)
         if not os.path.isfile(full_filepath):
-            print "write new cover art"
+            self.logger.info('Write cover art file: {}'.format(full_filepath))
             with open(full_filepath, 'wb') as f:
                 f.write(img_data.read())
         return self._strip_base_path(full_filepath)
@@ -250,6 +265,7 @@ class CheckCrashPlan(Service):
 class ServerSync(Service):
     def __init__(self, server_info):
         Service.__init__(self, server_info)
+        self.logger.debug('{} class initialized'.format(self.__class__.__name__))
         self.lockfile_path = self._test_file_path('lockfile_path')
         self.service_name = 'server-sync'
         self.connect_status = self._test_server_connection()
@@ -257,7 +273,9 @@ class ServerSync(Service):
 
     def _test_server_connection(self):
         try:
-            return os.path.exists(self.lockfile_path)
+            lockfile_exists = os.path.exists(self.lockfile_path)
+            self.logger.debug('Server Sync Lockfile exists {}'.format(lockfile_exists))
+            return lockfile_exists
         except TypeError:
             return False
 
@@ -266,6 +284,7 @@ class Plex(Service):
     def __init__(self, server_info):
         Service.__init__(self, server_info)
         assert type(server_info) is dict
+        self.logger.debug('{} class initialized'.format(self.__class__.__name__))
         self.server_info = server_info
         self.service_name = 'plex'
         self.connect_status = self._test_server_connection()

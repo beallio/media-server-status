@@ -3,8 +3,8 @@ import json
 
 from flask import render_template, Response
 
-from app import app
-from assets import api_functions
+from serverstatus import app
+from assets import apifunctions
 
 
 @app.route('/')
@@ -35,7 +35,7 @@ def _get_data(data):
     values = None
     status = 404
     try:
-        values = getattr(api_functions, data)()
+        values = getattr(apifunctions, data)()
         status = 200
     except (AttributeError, TypeError) as e:
         app.logger.error(e)

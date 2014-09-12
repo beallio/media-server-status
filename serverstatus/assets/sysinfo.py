@@ -5,8 +5,12 @@ import time
 import urllib2
 from collections import OrderedDict
 from math import floor, log
+import logging
 
 import psutil
+
+
+logger = logging.getLogger(__name__)
 
 
 def convert_bytes(value, unit, output_str=False, decimals=2, auto_determine=False):
@@ -183,6 +187,13 @@ def get_partitions_space(partitions, digits=1, sort='alpha'):
     return disk_space_formatted
 
 
+def get_load_average():
+    os_averages = os.getloadavg()
+    cpu_count = psutil.cpu_count()
+    final_averages = [average / cpu_count for average in os_averages]
+    return final_averages
+
+
 class GetSystemInfo(object):
     def __init__(self):
         pass
@@ -202,7 +213,7 @@ class GetSystemInfo(object):
         """
         mem_info = psutil.virtual_memory()
         system_uptime = get_system_uptime()
-        load_avg = os.getloadavg()
+        load_avg = get_load_average()
         return dict(mem_total=convert_bytes(mem_info[0], 'MB'),
                     mem_available=convert_bytes(mem_info[1], 'MB'),
                     mem_used_pct=mem_info[2],
