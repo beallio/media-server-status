@@ -5,13 +5,12 @@ from inspect import stack, getmodule
 def logger(log_type):
     def log_decorator(func):
         def wrapped(*args, **kwargs):
-            # preserve calling module name for logger
+            # preserve calling module name for mod_logger
             frm = stack()[1]
             mod = getmodule(frm[0])
-            logger = logging.getLogger(mod.__name__)
-            logger.setLevel(log_type)
+            wrapped_logger = logging.getLogger(mod.__name__)
             result = func(*args, **kwargs)
-            logger.debug(result)
+            getattr(wrapped_logger, log_type)(result)
             return result
 
         return wrapped
