@@ -1,7 +1,7 @@
 from collections import OrderedDict
 import logging
 
-from serverstatus.assets.loggingsetup import config
+from serverstatus.assets.configsetup import config
 from serverstatus.assets import services as Services, weather as Weather
 from serverstatus.assets.services import CheckCrashPlan, SubSonic, ServerSync, Plex
 from serverstatus.assets.sysinfo import GetSystemInfo, get_network_speed, get_ping, get_wan_ip, get_partitions_space, \

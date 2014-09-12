@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 import os
 
-from distutils.core import setup
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
 
 readme_file = 'README.md'
 readme_file_full_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), readme_file)
