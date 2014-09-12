@@ -1,44 +1,42 @@
 from collections import OrderedDict
 import logging
 
-from serverstatus.assets.configsetup import config
-from serverstatus.assets import services as Services, weather as Weather
-from serverstatus.assets.services import CheckCrashPlan, SubSonic, ServerSync, Plex
-from serverstatus.assets.sysinfo import GetSystemInfo, get_network_speed, get_ping, get_wan_ip, get_partitions_space, \
-    get_total_system_space
+from configsetup import config
+import weather as Weather
+from services import CheckCrashPlan, SubSonic, ServerSync, Plex
+from sysinfo import GetSystemInfo, get_network_speed, get_ping, get_wan_ip, get_partitions_space, get_total_system_space
+import wrappers
 
 
-logger = logging.getLogger(__name__)
-
-
+@wrappers.logger(logging.DEBUG)
 def system_info():
     get_system_info = GetSystemInfo()
     output = get_system_info.get_info()
-    return _log_debug(output)
+    return output
 
 
+@wrappers.logger(logging.DEBUG)
 def network_speed():
-    output = get_network_speed(sleep=5)
-    return _log_debug(output)
+    return get_network_speed(sleep=5)
 
 
+@wrappers.logger(logging.DEBUG)
 def ping():
-    output = dict(ping='{:.0f}'.format(get_ping()))
-    return _log_debug(output)
+    return dict(ping='{:.0f}'.format(get_ping()))
 
 
+@wrappers.logger(logging.DEBUG)
 def storage():
     paths = get_partitions_space(config.PARTITIONS)
-    output = dict(total=get_total_system_space(),
-                  paths=paths)
-    return _log_debug(output)
+    return dict(total=get_total_system_space(), paths=paths)
 
 
+@wrappers.logger(logging.DEBUG)
 def ip_address():
-    output = dict(wan_ip=get_wan_ip(), internal_ip=config.INTERNAL_IP)
-    return _log_debug(output)
+    return dict(wan_ip=get_wan_ip(), internal_ip=config.INTERNAL_IP)
 
 
+@wrappers.logger(logging.DEBUG)
 def services():
     servers = [Plex(config.PLEX_INFO), SubSonic(config.SUBSONIC_INFO),
                ServerSync(config.SERVERSYNC_INFO),
@@ -47,23 +45,17 @@ def services():
     servers_dict = OrderedDict()
     for s in servers_mapped:
         servers_dict = OrderedDict(servers_dict.items() + s.items())
-    output = servers_dict
-    return _log_debug(output)
+    return servers_dict
 
 
+@wrappers.logger(logging.DEBUG)
 def media():
     plex_server_creds = config.PLEX_INFO
-    s = Services.SubSonic(config.SUBSONIC_INFO)
-    output = s.getNowPlayingOrRecentlyAdded()
-    return _log_debug(output)
+    s = SubSonic(config.SUBSONIC_INFO)
+    return s.getNowPlayingOrRecentlyAdded()
 
 
+@wrappers.logger(logging.DEBUG)
 def weather():
     w = Weather.ForecastData(config.WEATHER)
-    output = w.getForecastData()
-    return _log_debug(output)
-
-
-def _log_debug(output):
-    logger.debug(output)
-    return output
+    return w.getForecastData()
