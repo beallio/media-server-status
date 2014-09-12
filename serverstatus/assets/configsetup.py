@@ -45,7 +45,7 @@ def load_config_file(logger=None):
 
     # import config file
     config_data = None
-    config_location = '/var/test_data1.py'
+    config_location = '/var/test_data.py'
     try:
         config_data = imp.load_source('test_data', config_location)
         for data in gen_contents(config_data):
