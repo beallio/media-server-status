@@ -3,8 +3,6 @@ import logging
 
 import libsonic
 
-import wrappers
-
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +68,6 @@ class Service(object):
             return None
 
     @staticmethod
-    @wrappers.logger(logging.DEBUG)
     def _strip_base_path(filepath):
         def strip_delims(path):
             delims = ['/', '\\']

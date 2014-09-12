@@ -4,15 +4,21 @@ from time import localtime, strftime
 
 import forecastio
 
+from exceptions import MissingForecastIOKey
+
 
 class ForecastData(object):
     def __init__(self, weather_config):
         assert type(weather_config) is dict
         self.forcastio_link_url = 'http://forecast.io/#/f/'
-        self.api_key = weather_config['Forecast_io_API_key']
-        self.lat = weather_config['Latitude']
-        self.lng = weather_config['Longitude']
-        self.units = weather_config['units']
+        try:
+            self.api_key = weather_config['Forecast_io_API_key']
+        except KeyError:
+            raise MissingForecastIOKey('No ForecastIO API key found. API key required for weather data')
+        # default weather to Stanford, CA and US units
+        self.lat = weather_config.get('Latitude', 37.4225)
+        self.lng = weather_config.get('Longitude', 122.1653)
+        self.units = weather_config.get('units', 'us')
         self.forecast = self._get_forecast_io()
 
     def getForecastData(self):
@@ -83,6 +89,7 @@ class ForecastData(object):
         try:
             bearing_text = direction_mappings[int(deg_norm_lookup)]
         except KeyError:
+            # Key values exceeds max in dictionary, which means it's blowing North
             bearing_text = direction_mappings[1]
         # output namedtuple for Cardinal direction, and abbrevation text
         return namedtuple(typename='bearing_text', field_names=['cardinal', 'abbrev'])._make(bearing_text)
@@ -91,6 +98,7 @@ class ForecastData(object):
     def _convert_time_to_text(t):
         assert type(t) is int
         t = strftime('%I:%M %p', localtime(t))
+        # Remove '0' values from time if less than 10hrs or 10mins
         if t.startswith('0'):
             t = t[1:]
         return t
