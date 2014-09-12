@@ -3,6 +3,8 @@ import logging
 
 import libsonic
 
+from serverstatus import app
+
 
 logger = logging.getLogger(__name__)
 
@@ -75,10 +77,11 @@ class Service(object):
                 path = path.strip(char)
             return path
 
-        path = os.path.split(os.path.realpath(__file__))[0]
-        filepath_without_server_path = filepath.replace(path, '')
-        filepath_without_server_path_stripped = strip_delims(filepath_without_server_path)
-        return filepath_without_server_path_stripped
+        # path = os.path.split(os.path.realpath(__file__))[0]
+        #filepath_without_server_path = filepath.replace(path, '')
+        #filepath_without_server_path_stripped = strip_delims(filepath_without_server_path)
+        file_location = filepath.replace(app.config['APP_MODULESLOCATION'], '')
+        return file_location
 
     def _test_file_path(self, file_path_key):
         output = None
@@ -129,7 +132,7 @@ class SubSonic(Service):
         Service.__init__(self, server_info)
         self.logger.debug('{} class initialized'.format(self.__class__.__name__))
         self.service_name = 'subsonic'
-        self.image_dir = 'static/img/tmp/'
+        self.image_dir = 'serverstatus/static/img/tmp/'
         self.conn = libsonic.Connection(baseUrl=self.server_info['url'],
                                         username=self.server_info['user'],
                                         password=self.server_info['password'],
@@ -183,7 +186,7 @@ class SubSonic(Service):
         """
         img_data = self.conn.getCoverArt(aid=coverArtID, size=size)
         cover_dir_short = os.path.join(self.image_dir, 'covers')
-        cover_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), cover_dir_short)
+        cover_dir = os.path.join(app.config['APPLOCATION'], cover_dir_short)
         if not os.path.isdir(cover_dir):
             self.logger.info('Directory not found. Creating directory: {}'.format(cover_dir))
             os.makedirs(cover_dir)

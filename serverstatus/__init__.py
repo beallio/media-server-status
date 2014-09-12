@@ -9,7 +9,9 @@ from flask import Flask
 app = Flask(__name__)
 app.config.update(
     APPNAME='server_status',
-    LOGGINGMODE=logging.DEBUG)
+    LOGGINGMODE=logging.DEBUG,
+    APPLOCATION=os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
+app.config['APP_MODULESLOCATION'] = os.path.join(app.config['APPLOCATION'], 'serverstatus')
 
 import views
 import assets
