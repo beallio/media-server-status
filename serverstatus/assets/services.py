@@ -3,6 +3,8 @@ import logging
 
 import libsonic
 
+import wrappers
+
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +70,7 @@ class Service(object):
             return None
 
     @staticmethod
+    @wrappers.logger(logging.DEBUG)
     def _strip_base_path(filepath):
         def strip_delims(path):
             delims = ['/', '\\']
@@ -171,7 +174,7 @@ class SubSonic(Service):
             connection_status = self.conn.ping()
             assert connection_status
         except AssertionError:
-            print "Unable to reach Subsonic server"
+            self.logger.error("Unable to reach Subsonic server")
         finally:
             return connection_status
 
