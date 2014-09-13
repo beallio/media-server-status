@@ -5,7 +5,7 @@ from inspect import stack, getmodule
 def logger(log_type):
     def log_decorator(func):
         def wrapped(*args, **kwargs):
-            # preserve calling module name for mod_logger
+            # preserve calling module name for logger
             frm = stack()[1]
             mod = getmodule(frm[0])
             wrapped_logger = logging.getLogger(mod.__name__)
