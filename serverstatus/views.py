@@ -8,7 +8,6 @@ from assets import apifunctions
 
 
 @app.route('/')
-@app.route('/index')
 def index():
     t1 = datetime.datetime.now()
     return render_template('index.html',

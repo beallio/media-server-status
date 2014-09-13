@@ -10,7 +10,10 @@ def logger(log_type):
             mod = getmodule(frm[0])
             wrapped_logger = logging.getLogger(mod.__name__)
             result = func(*args, **kwargs)
-            getattr(wrapped_logger, log_type)(result)
+            try:
+                getattr(wrapped_logger, log_type)(result)
+            except AttributeError as e:
+                wrapped_logger.error(e)
             return result
 
         return wrapped
