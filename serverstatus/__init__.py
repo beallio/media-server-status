@@ -16,6 +16,7 @@ app.config['APP_MODULESLOCATION'] = os.path.join(app.config['APPLOCATION'], 'ser
 import views
 import assets
 from assets.exceptions import MissingConfigFile
+from assets.services import SubSonic
 
 
 def _setup_logger():

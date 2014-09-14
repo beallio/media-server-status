@@ -4,7 +4,7 @@ from time import localtime, strftime
 
 import forecastio
 
-from exceptions import MissingForecastIOKey
+from serverstatus.assets.exceptions import MissingForecastIOKey
 
 
 class ForecastData(object):

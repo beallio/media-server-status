@@ -32,7 +32,7 @@ $(function(){
         var load_systeminfo = $systeminfo.load("html/system_info");
         var load_storage = $storage.load("html/storage");
         var load_services = $services.load("html/services");
-        var load_weather = $weather.load("html/weather");
+        var load_weather = $weather.load("html/forecast");
         var load_media = $media.load("html/media");
 
         function get_server_ip() {
