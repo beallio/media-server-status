@@ -1,36 +1,25 @@
 from collections import OrderedDict
+import logging
 
-# from serverstatus import app
 from weather import ForecastData
 from services import CheckCrashPlan, ServerSync, Plex, SubSonic
 from sysinfo import GetSystemInfo, get_network_speed, get_ping, get_wan_ip, get_partitions_space, get_total_system_space
 import wrappers
 
 
+logger = logging.getLogger(__name__)
+
+
 class APIFunctions(object):
     def __init__(self, config):
-        print 'APIFunction touched'
+        self.logger = logger
+        logger.debug('{} initialized'.format(__name__))
         self.config = config
-        try:
-            self.subsonic = SubSonic(self.config['SUBSONIC_INFO'])
-        except KeyError:
-            self.subsonic = None
-        try:
-            self.plex = Plex(self.config['PLEX_INFO'])
-        except KeyError:
-            self.plex = None
-        try:
-            self.server_sync = ServerSync(self.config['SERVERSYNC_INFO'])
-        except KeyError:
-            self.server_sync = None
-        try:
-            self.crashplan = CheckCrashPlan(self.config['CRASHPLAN_INFO'])
-        except KeyError:
-            self.crashplan = None
-        try:
-            self.weather = ForecastData(self.config['WEATHER'])
-        except KeyError:
-            self.weather = None
+        self.subsonic = None
+        self.plex = None
+        self.server_sync = None
+        self.crashplan = None
+        self.weather = None
 
     @staticmethod
     @wrappers.logger('debug')
@@ -60,7 +49,7 @@ class APIFunctions(object):
 
     @wrappers.logger('debug')
     def services(self):
-        self._test_configs()
+        self._load_configs()
         servers = [self.plex, self.subsonic, self.server_sync, self.crashplan]
         servers_mapped = [getattr(s, 'getStatusMapping') for s in servers]
         servers_dict = OrderedDict()
@@ -70,19 +59,53 @@ class APIFunctions(object):
 
     @wrappers.logger('debug')
     def media(self):
-        self._test_configs()
+        self._load_configs()
         subsonic = self.subsonic
         plex = self.plex
         return subsonic.getNowPlayingOrRecentlyAdded()
 
     @wrappers.logger('debug')
     def forecast(self):
+        self._load_configs()
         return self.weather.getForecastData()
 
-    def _test_configs(self):
-        service_variables = [(self.subsonic, SubSonic(self.config['SUBSONIC_INFO'])),
-                             (self.plex, Plex(self.config['PLEX_INFO'])),
-                             (self.server_sync, ServerSync(self.config['SERVERSYNC_INFO'])),
-                             (self.crashplan, CheckCrashPlan(self.config['CRASHPLAN_INFO'])),
-                             (self.weather, ForecastData(self.config['WEATHER']))]
-        missing_vars = [var for var in service_variables if var[0] not in locals()]
+    def _get_plex_cover_art(self, query):
+        self._load_configs()
+        return self.plex.getCoverImage(query)
+
+    def _get_subsonic_cover_art(self, cover_id, size):
+        self._load_configs()
+        cover_id = int(cover_id)
+        return self.subsonic.getCoverArt(cover_id, size)
+
+    def _load_configs(self):
+        if self.subsonic is None:
+            try:
+                self.subsonic = SubSonic(self.config['SUBSONIC_INFO'])
+            except KeyError:
+                logger.debug('Subsonic not loaded yet')
+                pass
+        if self.plex is None:
+            try:
+                self.plex = Plex(self.config['PLEX_INFO'])
+            except KeyError:
+                logger.debug('Plex not loaded yet')
+                pass
+        if self.server_sync is None:
+            try:
+                self.server_sync = ServerSync(self.config['SERVERSYNC_INFO'])
+            except KeyError:
+                logger.debug('Server Sync not loaded yet')
+                pass
+        if self.crashplan is None:
+            try:
+                self.crashplan = CheckCrashPlan(self.config['CRASHPLAN_INFO'])
+            except KeyError:
+                logger.debug('CrashPlan not loaded yet')
+                pass
+        if self.weather is None:
+            try:
+                self.weather = ForecastData(self.config['WEATHER'])
+            except KeyError:
+                logger.debug('weather not loaded yet')
+                pass

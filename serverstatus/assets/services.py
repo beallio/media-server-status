@@ -157,7 +157,6 @@ class Service(object):
 
 
 class SubSonic(Service):
-    # // TODO Clean up the entry point for the server subdirectory
     def __init__(self, server_info):
         Service.__init__(self, server_info)
         self.service_name = 'subsonic'
@@ -171,9 +170,11 @@ class SubSonic(Service):
         self.connect_status = self._test_server_connection()
         self.server_full_url = self._get_server_full_url()
         self.resolved_status_mapping = self._get_status_mapping()
-        self._img_base_url = self._build_external_img_path(self.service_name)
+        self._img_base_url = self._build_external_img_path(self.service_name) + 'cover='
 
-    def getNowPlayingOrRecentlyAdded(self, number_of_results=10):
+    def getNowPlayingOrRecentlyAdded(self, number_of_results=None):
+        if number_of_results is None:
+            number_of_results = 9
         entries = {}
         now_playing_count = 0
         if not self.connect_status:
@@ -192,6 +193,16 @@ class SubSonic(Service):
                 show_recently_added = recently_added_count - now_playing_count
                 entries['recently_added'] = entries['recently_added'][: show_recently_added]
         return entries
+
+    def getCoverArt(self, coverArtId, size=None):
+        assert type(coverArtId) is int
+        if any([size is None, size <= 0, type(size) is not int]):
+            return self.conn.getCoverArt(aid=coverArtId)
+        else:
+            if size > 2000:
+                # set max limit on size of photo returned
+                size = 2000
+            return self.conn.getCoverArt(aid=coverArtId, size=size)
 
     def set_output_directory(self, directory):
         self.image_dir = directory
@@ -232,7 +243,8 @@ class SubSonic(Service):
         :return: entry
         """
         assert type(entry) == dict
-        entry['coverArtLocalLink'] = self._create_cover_art_file(entry['coverArt'])
+        # entry['coverArtLocalLink'] = self._create_cover_art_file(entry['coverArt'])
+        entry['coverArtExternalLink'] = ''.join([self._img_base_url, str(entry['coverArt']), '&size=145'])
         try:
             # Return progress on currently playing song(s).  No good way to do this since Subsonic
             # doesn't have access to this info through it's API.  Calculate progress by taking last time
@@ -241,8 +253,8 @@ class SubSonic(Service):
         except KeyError:
             entry['progress'] = 1
         finally:
-            entry['progress_pct'] = '{:.2%}'.format(entry['progress'])
-            entry['progress_whole'] = entry['progress'] * 100
+            entry.update(progress_pct='{:.2%}'.format(entry['progress']),
+                         progress_whole=entry['progress'] * 100)
         return entry
 
     def _get_now_playing(self):
@@ -256,7 +268,9 @@ class SubSonic(Service):
         entries = [entry for entry in entries if entry['minutesAgo'] <= 10]
         return entries
 
-    def _get_recently_added(self, num_results=10):
+    def _get_recently_added(self, num_results=None):
+        if num_results is None:
+            num_results = 10
         recently_added = self.conn.getAlbumList("newest", num_results)
         recently_added = recently_added['albumList']['album']
         return [self._get_entry_info(entry) for entry in recently_added]
@@ -264,9 +278,6 @@ class SubSonic(Service):
     def _get_server_full_url(self):
         return '{url}:{port:d}{path}'.format(url=self.server_info['url'], port=self.server_info['port'],
                                              path=self.server_info['serverpath'])
-
-    def getCoverArt(self, coverArtID):
-        return self.conn.getCoverArt(aid=coverArtID)
 
 
 class CheckCrashPlan(Service):

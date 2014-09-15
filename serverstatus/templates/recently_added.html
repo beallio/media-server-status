@@ -1,50 +1,21 @@
 <div id="recently_added_title">
     <h1 class="extralight">
         Recently Added
+        <hr>
     </h1>
-
-
-    <div class="recently_added">
-        <div class="col-md-12">
-            <div id="carousel-example-generic" class=" carousel slide">
-                <div class="thumbnail">
-                    <!-- Wrapper for slides -->
-                    <div class="carousel-inner">
-                        {% for item in values.recently_added %}
-                        {% if loop.first %}
-                        <div class="item active">
-                            <img src="{{item.coverArtLocalLink}}"/>
-
-                            <div class="album_info">
-                                <b class="light">Artist:</b> {{ item.artist }}<br>
-                                <b class="light">Album:</b> {{ item.album }}<br>
-                                <b class="light">Year:</b> {{item.year}}
-                            </div>
-                        </div>
-                        <!--
-                                                            <a href="#" data-toggle="tooltip"
-                                                        title="Artist: {{ item.artist }}&#013;
-                                                        Album: {{ item.album }}&#013;
-                                                        Year: {{item.year}}">test</a>
-                                                        -->
-                        {% else %}
-                        <div class="item">
-                            <img src="{{item.coverArtLocalLink}}" alt="{{ item.album }}"/>
-
-                            <div class="album_info">
-                                <b class="light">Artist:</b> {{ item.artist }}<br>
-                                <b class="light">Album:</b> {{ item.album }}<br>
-                                <b class="light">Year:</b> {{item.year}}
-                            </div>
-                        </div>
-                        {% endif %}
-                        {% endfor %}
-                    </div>
-                </div>
-                <!-- Controls -->
-                <a class="left carousel-control" href="#carousel-example-generic" data-slide="prev"></a>
-                <a class="right carousel-control" href="#carousel-example-generic" data-slide="next"></a>
-            </div>
+</div>
+<div class="recently_added" style="overflow: visible; margin-bottom: 50px;">
+    <div class="col-md-12">
+        <div class="row">
+            {% for item in values.recently_added %}
+            <div class="col-md-4" data-toggle="tooltip" data-trigger="hover"
+            {% if (loop.index % 3) == 1 %} data-placement="right" {% elif loop.index == 8 or loop.index == 9 %}
+            data-placement="top"
+            {% else %} data-placement="bottom" {% endif %}
+            title="Artist: {{ item.artist }}&#013; Album: {{ item.album }}&#013; Year: {{item.year}}">
+            <img src="{{item.coverArtExternalLink}}" style="width: 100%;" class="thumbnail"/>
+        </div>
+        {% endfor %}
         </div>
     </div>
 </div>
