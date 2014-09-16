@@ -91,7 +91,9 @@
         </div>
     </div>
 </div>
-<div class="get_server_info" style=" position: fixed; bottom: 1px; right: 2px;">load: {{ time }}</div>
+<div class="get_server_info" style=" position: fixed; bottom: 1px; right: 2px;">{% if testing %}load: {{ time }}{% endif
+    %}
+</div>
 <div id="server_ip" style="display:none"></div>
 <div id="client_ip" style="display:none"></div>
 <script src="static/js/functions.js"></script>

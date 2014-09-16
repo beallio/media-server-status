@@ -15,7 +15,8 @@ import datetime
 def index():
     t1 = datetime.datetime.now()
     return render_template('index.html',
-                           time=datetime.datetime.now() - t1)
+                           time=datetime.datetime.now() - t1,
+                           testing=app.config['TESTING'])
 
 
 @app.route('/api/<data>', methods=['GET'])
