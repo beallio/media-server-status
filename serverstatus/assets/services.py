@@ -366,33 +366,64 @@ class Plex(Service):
         return recently_added_output
 
     def getNowPlaying(self):
-        self.transcodes = 0
-        self._cover_mapping = dict()
+        def generate_video_data(vid_data):
+            """
+            Generator function for creating relevant video data.  Takes JSON data, checks if is data is an OrderedDict
+            then grabs the relevant data if the video is a TV show or Movie.
+            """
+            # In JSON form Plex returns multiple videos as a list of OrderedDicts, and a single video as an OrderedDict
+            # Convert the single video to a list for processing
+            if type(vid_data) is OrderedDict:
+                video_list = list()
+                video_list.append(vid_data)
+            elif type(vid_data) is list:
+                video_list = vid_data
+            else:
+                # Plex returned data that we haven't seen before.  Raise exception to warn user.
+                msg = ('Plex returned API data that does not match to known standards.'
+                       'Plex return data as {} when it should return a list or OrderedDict').format(
+                    type(vid_data))
+                self.logger.error(msg)
+                raise exceptions.PlexAPIDataError(msg)
+            for video in video_list:
+                # Grab relevant data about Video from JSON data
+                yield self._get_video_data(video)
+
+        self.transcodes = 0  # reset transcode count
+        self._cover_mapping = dict()  # reset cover mapping dictionary
         api_call = 'nowplaying'
         now_playing_relevant_data = list()
         json_data = self._get_xml_convert_to_json(api_call)
         if not int(json_data['MediaContainer']['@size']):
             # Nothing is currently playing in plex
             return None
-        # In JSON form Plex returns multiple videos as a list of OrderedDicts, and a single video as an OrderedDict
-        # Convert the single video to a list for processing
-        if type(json_data['MediaContainer']['Video']) is OrderedDict:
-            video_list = list()
-            video_list.append(json_data['MediaContainer']['Video'])
-        elif type(json_data['MediaContainer']['Video']) is list:
-            video_list = json_data['MediaContainer']['Video']
-        else:
-            # Plex returned data that we haven't seen before.  Raise exception to warn user.
-            msg = ('Plex returned API data that does not match to known standards.'
-                   'Plex return data as {} when it should return a list or OrderedDict').format(
-                type(json_data['MediaContainer']['Video']))
-            self.logger.error(msg)
-            raise exceptions.PlexAPIDataError(msg)
-        del json_data  # remove data.  No longer needed
-        for video in video_list:
-            now_playing_relevant_data.append(self._get_video_data(video))
-        del video_list
+        for vid in generate_video_data(json_data['MediaContainer']['Video']):
+            now_playing_relevant_data.append(vid)
         return now_playing_relevant_data
+
+    def getCoverImage(self, arturl_mapped):
+        """
+        Returns binary jpeg object from plex
+
+        :type cover_loc: unicode or str
+        :return:
+        """
+        if self._cover_mapping is None:
+            # if _cover_mapping is empty we need to initialize Now Playing
+            self.getNowPlaying()
+        try:
+            resp = urllib2.urlopen(urlparse.urljoin(self.server_internal_url_and_port,
+                                                    self._cover_mapping[arturl_mapped]))
+        except TypeError, urllib2.HTTPError:
+            # // TODO insert logger warning and raise error
+            raise
+        return resp
+
+    @property
+    def getTranscodes(self):
+        # // TODO need to stream line this once Plex code is fully integrated and out of testing
+        _ = self.getNowPlaying()
+        return self.transcodes
 
     def _test_server_connection(self):
         """
@@ -524,6 +555,8 @@ class Plex(Service):
                           summary=video['@summary'],
                           releasedate=self._convert_release_date(video['@originallyAvailableAt']),
                           art_external_url=self._img_base_url + arturlmapped_value)
+        # converts direct plex http link to thumbnail to internal mapping
+        # security through obfuscation /s
         self._cover_mapping[arturlmapped_value] = video_data['arturl']
         try:
             video_data['rating'] = float(video['@rating'])
@@ -579,21 +612,3 @@ class Plex(Service):
             with open(full_filepath, 'wb') as f:
                 f.write(img_data.read())
         img_data.close()
-
-    def getCoverImage(self, arturl_mapped):
-        """
-        Returns binary jpeg object from plex
-
-        :type cover_loc: unicode or str
-        :return:
-        """
-        if self._cover_mapping is None:
-            # if _cover_mapping is empty we need to initialize Now Playing
-            self.getNowPlaying()
-        try:
-            resp = urllib2.urlopen(urlparse.urljoin(self.server_internal_url_and_port,
-                                                    self._cover_mapping[arturl_mapped]))
-        except TypeError, urllib2.HTTPError:
-            # // TODO insert logger warning and raise error
-            raise
-        return resp

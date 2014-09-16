@@ -1,14 +1,9 @@
 <!-- Transcode sessions title & badge div-->
-<h4 class="panel-title extralight">
+<h4 class="panel-title extralight" id="loadheader">
     Load
-    {% if plex_transcodes > 0 %}
-    <!-- each order of magnitude should increase notification box by 10px, base is 20 pxs -->
-    <span id="transcodeSessions" class="badge pull-right" rel="tooltip" data-toggle="tooltip"
-          data-placement="bottom" title="" style="width:{{ ('{:}'.format(plex_transcodes)|length - 1) * 10 + 20 }}px;
-          margin-right:10px; margin-left:-{{ ('{:}'.format(plex_transcodes)|length - 1) * 10 + 30 }}px; margin-top: -2px;"
-          data-original-title="Transcode Sessions">{{ plex_transcodes }}
+    <span class="transcodes">
+    {% include "plex_transcodes.html" ignore missing with context %}
     </span>
-    {% endif %}
 </h4>
 <hr class="hr_break">
 <div id="system_load">

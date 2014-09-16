@@ -1,4 +1,3 @@
-import datetime
 import json
 
 from flask import render_template, Response, request
@@ -9,6 +8,7 @@ from assets import apifunctions
 
 api_functions = None
 
+import datetime
 
 @app.route('/')
 @app.route('/index')
@@ -30,12 +30,15 @@ def get_json(data):
 @app.route('/html/<data>')
 def html_generator(data):
     values, status = _get_data(data)
+    start = datetime.datetime.now()
     f = render_template(data + '.html', values=values)
+    app.logger.debug('Render time for {}: {}'.format(data, datetime.datetime.now() - start))
     return Response(f, status=status, mimetype='text/plain')
 
 
 @app.route('/img/<data>')
 def get_img_data(data):
+    start = datetime.datetime.now()
     global api_functions
     _load_APIs()
     resp = Response('null', status=404, mimetype='text/plain')
@@ -50,6 +53,7 @@ def get_img_data(data):
     else:
         return resp
     resp = Response(img_resp, status=status, mimetype='image/jpeg')
+    app.logger.debug('Image request time for {}: {}'.format(data, datetime.datetime.now() - start))
     return resp
 
 
@@ -58,7 +62,7 @@ def _get_data(data):
     status = 404
     _load_APIs()
     try:
-        values = getattr(api_functions, str(data).strip('_'))()
+        values = getattr(api_functions, str(data).lstrip('_'))()
         status = 200
     except (AttributeError, TypeError) as e:
         app.logger.error(e)

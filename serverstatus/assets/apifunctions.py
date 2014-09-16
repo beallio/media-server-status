@@ -69,6 +69,11 @@ class APIFunctions(object):
         self._load_configs()
         return self.weather.getForecastData()
 
+    @wrappers.logger('debug')
+    def plex_transcodes(self):
+        self._load_configs()
+        return dict(plex_transcodes=self.plex.getTranscodes)
+
     def _get_plex_cover_art(self, query):
         self._load_configs()
         return self.plex.getCoverImage(query)

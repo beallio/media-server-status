@@ -1,0 +1,10 @@
+{% if values is defined and values.plex_transcodes is defined %}
+{% if values.plex_transcodes > 0 %}
+<!-- each order of magnitude should increase notification box by 10px, base is 20 pxs -->
+<span class="badge pull-right" rel="tooltip" data-toggle="tooltip"
+      data-placement="bottom" title="" style="width:{{ ('{:}'.format(values.plex_transcodes)|length - 1) * 10 + 20 }}px;
+        margin-right:10px; margin-left:-{{ ('{:}'.format(values.plex_transcodes)|length - 1) * 10 + 30 }}px; margin-top: -2px;"
+      data-original-title="Transcode Sessions">{{ ('{:}'.format(values.plex_transcodes)) }}
+    </span>
+{% endif %}
+{% endif %}

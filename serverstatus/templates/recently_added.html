@@ -12,10 +12,10 @@
             {% if (loop.index % 3) == 1 %} data-placement="right" {% elif loop.index == 8 or loop.index == 9 %}
             data-placement="top"
             {% else %} data-placement="bottom" {% endif %}
-            title="Artist: {{ item.artist }}&#013; Album: {{ item.album }}&#013; Year: {{item.year}}">
-            <img src="{{item.coverArtExternalLink}}" style="width: 100%;" class="thumbnail"/>
+            title="Artist: {{ item.artist }}&#013; Album: {{ item.album }}&#013; Year: {{ item.year }}">
+            <img src="{{item.coverArtExternalLink}}" style="width: 100%;" class="thumbnail" id="cover{{ loop.index }}"/>
         </div>
         {% endfor %}
-        </div>
     </div>
+</div>
 </div>
