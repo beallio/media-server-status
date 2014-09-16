@@ -1,4 +1,5 @@
 var api_base_url = $SCRIPT_ROOT + "/api/" ;
+var html_base_url = $SCRIPT_ROOT + "/html/" ;
 
 
 // Enable Expand/Collapse panels
@@ -20,7 +21,7 @@ $(function(){
     {
         $.ajaxSetup(
         {
-            cache: false
+          cache: false
         });
 
         var $systeminfo = $(".system-info");
@@ -29,7 +30,15 @@ $(function(){
         var $services = $(".services");
         var $media = $(".media");
 
-        var load_systeminfo = $systeminfo.load("html/system_info");
+
+        function load_systeminfo() {
+            $systeminfo.load("html/system_info", function() {
+                var $transcodes = $(".transcodes");
+                $transcodes.load("html/plex_transcodes");
+            });
+
+        }
+
         var load_storage = $storage.load("html/storage");
         var load_services = $services.load("html/services");
         var load_weather = $weather.load("html/forecast");
@@ -84,7 +93,7 @@ $(function(){
        };
 
         // Load at start of page
-        load_systeminfo;
+        load_systeminfo();
         load_storage;
         load_services;
         load_weather;
@@ -92,13 +101,13 @@ $(function(){
         
         update_network_speed();
         update_ping();
-        get_server_ip();
-        get_client_ip();
+        //get_server_ip();
+        //get_client_ip();
 
         // Refresh every 30 seconds
         var refreshId = setInterval(function()
         {
-            load_systeminfo;
+            load_systeminfo();
         }, 30000);
 
         // Refresh every 1 minute
@@ -106,14 +115,15 @@ $(function(){
         {
             update_network_speed();
             update_ping();
+
             load_media;
         }, 60000);
 
         // Refresh every 10 minutes
         var refreshId = setInterval(function()
         {
-            get_server_ip();
-            get_client_ip();
+            //get_server_ip();
+            //get_client_ip();
             load_storage;
             load_weather;
             load_services;
