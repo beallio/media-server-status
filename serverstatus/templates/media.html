@@ -1,5 +1,5 @@
 {% if values.now_playing %}
 {% include "now_playing.html" ignore missing with context %}
-{% elif values.recently_added %}
+{% elif values.subsonic.recently_added %}
 {% include "recently_added.html" ignore missing with context %}
 {% endif %}

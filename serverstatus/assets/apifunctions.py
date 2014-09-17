@@ -62,7 +62,7 @@ class APIFunctions(object):
         self._load_configs()
         subsonic = self.subsonic
         plex = self.plex
-        return subsonic.getNowPlayingOrRecentlyAdded()
+        return dict(subsonic=subsonic.getNowPlayingOrRecentlyAdded(), plex=plex.getRecentlyAdded())
 
     @wrappers.logger('debug')
     def forecast(self):

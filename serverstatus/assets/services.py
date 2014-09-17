@@ -78,7 +78,7 @@ class Service(object):
 
     @staticmethod
     def _strip_base_path(filepath):
-        return filepath.replace(app.config['APP_MODULESLOCATION'], '')
+        return filepath.replace(app.config['APP_MODULESLOCATION'], '').lstrip('/')
 
     def _test_file_path(self, file_path_key):
         output = None
@@ -152,7 +152,7 @@ class Service(object):
 
     @staticmethod
     def _build_external_img_path(service_name):
-        basepath = '/img/'
+        basepath = 'img/'
         return ''.join([basepath, service_name, '?'])
 
 
@@ -218,12 +218,15 @@ class SubSonic(Service):
         finally:
             return connection_status
 
-    def _create_cover_art_file(self, coverArtID, size=600):
+    def _create_cover_art_file(self, coverArtID, size=None):
         """
         size in getCoverArt method for subsonic returns a square image with dimensions in pixels equal to size
         :param coverArtID:
         :return:
         """
+        # set default image size in pixels
+        if size is None:
+            size = 600
         img_data = self.conn.getCoverArt(aid=coverArtID, size=size)
         cover_dir = self._get_img_directory('covers')
         filename = 'cover'
@@ -243,7 +246,7 @@ class SubSonic(Service):
         :return: entry
         """
         assert type(entry) == dict
-        # entry['coverArtLocalLink'] = self._create_cover_art_file(entry['coverArt'])
+        # entry['coverArtLocalLink'] = self._create_cover_art_file(entry['coverArt'], size=145)
         entry['coverArtExternalLink'] = ''.join([self._img_base_url, str(entry['coverArt']), '&size=145'])
         try:
             # Return progress on currently playing song(s).  No good way to do this since Subsonic

@@ -27,7 +27,8 @@ def _setup_logger():
     """
     mod_logger = None
     # use dir name thrice to return to base module path
-    log_directory = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))), 'tmp')
+    # log_directory = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))), 'tmp')
+    log_directory = os.path.join('/var', 'tmp')
     log_location = os.path.join(log_directory, '_'.join([app.config['APPNAME'], 'status.log']))
     if not os.path.isdir(log_directory):
         try:
