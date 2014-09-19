@@ -1,10 +1,12 @@
 from collections import OrderedDict
 import logging
 
-from weather import ForecastData
-from services import CheckCrashPlan, ServerSync, Plex, SubSonic
-from sysinfo import GetSystemInfo, get_network_speed, get_ping, get_wan_ip, get_partitions_space, get_total_system_space
-import wrappers
+from serverstatus.assets.weather import ForecastData
+from serverstatus.assets.services import CheckCrashPlan, ServerSync, Plex, \
+    SubSonic
+from serverstatus.assets.sysinfo import GetSystemInfo, get_network_speed, \
+    get_ping, get_wan_ip, get_partitions_space, get_total_system_space
+import serverstatus.assets.wrappers as wrappers
 
 
 logger = logging.getLogger(__name__)
@@ -51,10 +53,11 @@ class APIFunctions(object):
     def services(self):
         self._load_configs()
         servers = [self.plex, self.subsonic, self.server_sync, self.crashplan]
-        servers_mapped = [getattr(s, 'getStatusMapping') for s in servers]
+        servers_mapped = [getattr(server, 'getStatusMapping') for server in
+                          servers]
         servers_dict = OrderedDict()
-        for s in servers_mapped:
-            servers_dict = OrderedDict(servers_dict.items() + s.items())
+        for server in servers_mapped:
+            servers_dict = OrderedDict(servers_dict.items() + server.items())
         return servers_dict
 
     @wrappers.logger('debug')
@@ -62,7 +65,9 @@ class APIFunctions(object):
         self._load_configs()
         subsonic = self.subsonic
         plex = self.plex
-        return dict(subsonic=subsonic.getNowPlayingOrRecentlyAdded(), plex=plex.getRecentlyAdded())
+        return dict(
+            subsonic_recentlyadded=subsonic.get_recently_added(num_results=6),
+            plex_recentlyadded=plex.get_recently_added(num_results=6))
 
     @wrappers.logger('debug')
     def forecast(self):
@@ -72,16 +77,16 @@ class APIFunctions(object):
     @wrappers.logger('debug')
     def plex_transcodes(self):
         self._load_configs()
-        return dict(plex_transcodes=self.plex.getTranscodes)
+        return dict(plex_transcodes=self.plex.get_transcodes)
 
     def _get_plex_cover_art(self, query):
         self._load_configs()
-        return self.plex.getCoverImage(query)
+        return self.plex.get_cover_image(query)
 
     def _get_subsonic_cover_art(self, cover_id, size):
         self._load_configs()
         cover_id = int(cover_id)
-        return self.subsonic.getCoverArt(cover_id, size)
+        return self.subsonic.get_cover_art(cover_id, size)
 
     def _load_configs(self):
         if self.subsonic is None:
@@ -89,28 +94,23 @@ class APIFunctions(object):
                 self.subsonic = SubSonic(self.config['SUBSONIC_INFO'])
             except KeyError:
                 logger.debug('Subsonic not loaded yet')
-                pass
         if self.plex is None:
             try:
                 self.plex = Plex(self.config['PLEX_INFO'])
             except KeyError:
                 logger.debug('Plex not loaded yet')
-                pass
         if self.server_sync is None:
             try:
                 self.server_sync = ServerSync(self.config['SERVERSYNC_INFO'])
             except KeyError:
                 logger.debug('Server Sync not loaded yet')
-                pass
         if self.crashplan is None:
             try:
                 self.crashplan = CheckCrashPlan(self.config['CRASHPLAN_INFO'])
             except KeyError:
                 logger.debug('CrashPlan not loaded yet')
-                pass
         if self.weather is None:
             try:
                 self.weather = ForecastData(self.config['WEATHER'])
             except KeyError:
                 logger.debug('weather not loaded yet')
-                pass

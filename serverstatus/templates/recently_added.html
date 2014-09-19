@@ -1,22 +1,109 @@
-<div id="recently_added_title">
-    <h1 class="light">
-    Recently Added
-        <hr>
-    </h1>
-</div>
-<div class="recently_added" style="overflow: visible; margin-bottom: 50px;">
-    <div class="col-md-12">
-        <div class="row"><h3 class="extralight">Music</h3></div>
-        <div class="row">
-            {% for item in values.subsonic.recently_added %}
-            <div class="col-md-4" data-toggle="tooltip" data-trigger="hover"
-            {% if (loop.index % 3) == 1 %} data-placement="right" {% elif loop.index == 8 or loop.index == 9 %}
-            data-placement="top"
-            {% else %} data-placement="bottom" {% endif %}
-            title="Artist: {{ item.artist }}&#013; Album: {{ item.album }}&#013; Year: {{ item.year }}">
-            <img src="{{item.coverArtExternalLink}}" style="width: 100%;" class="thumbnail" id="cover{{ loop.index }}"/>
-        </div>
+<div class="col-md-12">
+
+    <!-- Begin Movie/TV section -->
+    <div class="row">
+        {% for item in values.plex_recentlyadded %}
+            <div class="col-md-4">
+                <a href="#" class="thumbnail" data-toggle="modal"
+                   data-target="#videoModal{{ loop.index }}">
+                    <img src="{{ url_for('images.pad', filename=item.arturl, height=217) }}"
+                         style="width: 100%;"
+                         id="video-cover{{ loop.index }}"/>
+                </a>
+            </div>
+
+            <!-- Modal video {{ loop.index }}-->
+            <div class="modal fade" id="videoModal{{ loop.index }}"
+                 tabindex="-1"
+                 role="dialog" aria-labelledby="video{{ loop.index }}"
+                 aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close"
+                                    data-dismiss="modal"><span
+                                    aria-hidden="true">&times;</span><span
+                                    class="sr-only">Close</span></button>
+                            <h3 class="modal-title regular"
+                                id="video{{ loop.index }}">{{ item.showtitle }}</h3>
+                        </div>
+                        <div class="modal-body">
+                            <img src="{{ url_for('images.pad', filename=item.arturl, height=600) }}"
+                                 class="img-rounded"/>
+                        </div>
+                        <div class="modal-footer">
+                            <dl class="dl-horizontal text-left">
+                                <dt class="regular">Summary</dt>
+                                <dd class="light">{{ item.summary }}</dd>
+                                <dt class="regular">Release Date</dt>
+                                <dd class="light">{{ item.releasedate[1] }}/{{ item.releasedate[2] }}/{{ item.releasedate[0] }}</dd>
+                                <dt class="regular">Rating</dt>
+                                <dd class="light">{{ item.rating|round(1, 'common') }}</dd>
+                                <dt class="regular">Added</dt>
+                                <dd class="light">{{ item.added_at }}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Modal video {{ loop.index }} -->
         {% endfor %}
 
     </div>
+    <!-- End Movie/TV section -->
+
+    <!-- Begin Music Section -->
+    <div class="row">
+        {% for item in values.subsonic_recentlyadded %}
+            <div class="col-md-4">
+                <a href="#" class="thumbnail" data-toggle="modal"
+                   data-target="#musicModal{{ loop.index }}">
+                    <div id="music-cover{{ loop.index }}">
+                        <img src="{{ item.coverArtExternalLink_sm }}"
+                             style="width: 100%;"/>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Modal music {{ loop.index }}-->
+            <div class="modal fade" id="musicModal{{ loop.index }}"
+                 tabindex="-1" role="dialog"
+                 aria-labelledby="music{{ loop.index }}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close"
+                                    data-dismiss="modal"><span
+                                    aria-hidden="true">&times;</span><span
+                                    class="sr-only">Close</span></button>
+                            <h3 class="modal-title regular"
+                                id="music{{ loop.index }}">{{ item.album }}</h3>
+                        </div>
+                        <div class="modal-body">
+                            <img src="{{ item.coverArtExternalLink_xl }}"
+                                 style="width: 100%;" class="img-rounded"/>
+                        </div>
+                        <div class="modal-footer">
+                            <dl class="dl-horizontal text-left">
+                                <dt class="regular">Artist</dt>
+                                <dd class="light">{{ item.artist }}</dd>
+                                <dt class="regular">Year</dt>
+                                <dd class="light">{{ item.year }}</dd>
+                                <dt class="regular">Genre</dt>
+                                <dd class="light">{{ item.genre }}</dd>
+                                <dt class="regular">Added</dt>
+                                <dd class="light">{{ item.created }}</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Modal music {{ loop.index }} -->
+        {% endfor %}
+
+    </div>
+    <!-- End Music Section -->
+
+
 </div>
+
