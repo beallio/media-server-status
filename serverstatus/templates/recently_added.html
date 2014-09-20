@@ -1,109 +1,149 @@
-<div class="col-md-12">
-
+<div class="row">
+    <div class="col-md-12">
+        <h3 class="extralight">
+            Recently Added
+        </h3>
+    </div>
+</div>
+<div class="panel-group" id="accordion">
     <!-- Begin Movie/TV section -->
-    <div class="row">
-        {% for item in values.plex_recentlyadded %}
-            <div class="col-md-4">
-                <a href="#" class="thumbnail" data-toggle="modal"
-                   data-target="#videoModal{{ loop.index }}">
-                    <img src="{{ url_for('images.pad', filename=item.arturl, height=217) }}"
-                         style="width: 100%;"
-                         id="video-cover{{ loop.index }}"/>
-                </a>
-            </div>
+    <div class="panel panel-default">
+        <div class="panel-heading" data-toggle="collapse"
+             data-parent="#accordion" data-target="#collapseOne">
+            <h4 class="panel-title extralight">
+                <a href="#">Videos</a>
+            </h4>
+        </div>
+        <div id="collapseOne" class="panel-collapse collapse in">
+            <div class="panel-body">
+                <div class="row">
+                    {% for item in values.plex_recentlyadded %}
+                        <div class="col-md-4">
+                            <a href="#" class="thumbnail" data-toggle="modal"
+                               data-target="#videoModal{{ loop.index }}">
+                                <img src="{{ item.art_external_url }}"
+                                     style="width: 100%;"
+                                     id="video-cover{{ loop.index }}"/>
+                            </a>
+                        </div>
 
-            <!-- Modal video {{ loop.index }}-->
-            <div class="modal fade" id="videoModal{{ loop.index }}"
-                 tabindex="-1"
-                 role="dialog" aria-labelledby="video{{ loop.index }}"
-                 aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <button type="button" class="close"
-                                    data-dismiss="modal"><span
-                                    aria-hidden="true">&times;</span><span
-                                    class="sr-only">Close</span></button>
-                            <h3 class="modal-title regular"
-                                id="video{{ loop.index }}">{{ item.showtitle }}</h3>
+                        <!-- Modal video {{ loop.index }}-->
+                        <div class="modal fade" id="videoModal{{ loop.index }}"
+                             tabindex="-1"
+                             role="dialog"
+                             aria-labelledby="video{{ loop.index }}"
+                             aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-body">
+                                        <img src="{{ item.art_external_url }}"
+                                             style="width: 100%;"
+                                             class="img-rounded"/>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <dl class="dl-horizontal text-left">
+                                            {% if item.type == 'Movies' %}
+                                                <dt class="regular">Title</dt>
+                                                <dd class="light">{{ item.showtitle }}</dd>
+                                                <dt class="regular">Summary</dt>
+                                                <dd class="light">{{ item.summary }}</dd>
+                                                <dt class="regular">Release
+                                                                    Date
+                                                </dt>
+                                                <dd class="light">{{ item.releasedate[1] }}/{{ item.releasedate[2] }}/{{ item.releasedate[0] }}</dd>
+                                                <dt class="regular">Rating</dt>
+                                                <dd class="light">{{ item.rating|round(1, 'common') }}</dd>
+                                                <dt class="regular">Added</dt>
+                                                <dd class="light">{{ item.added_at }}</dd>
+
+                                            {% else %}
+
+                                                <dt class="regular">Season</dt>
+                                                <dd class="light">{{ item.season }}</dd>
+                                                <dt class="regular">Episode</dt>
+                                                <dd class="light">{{ item.episode_number }}</dd>
+                                                <dt class="regular">Summary</dt>
+                                                <dd class="light">{{ item.summary }}</dd>
+                                                <dt class="regular">Added</dt>
+                                                <dd class="light">{{ item.added_at }}</dd>
+
+                                            {% endif %}
+                                        </dl>
+                                        <button type="button"
+                                                class="btn btn-default"
+                                                data-dismiss="modal">Close
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="modal-body">
-                            <img src="{{ url_for('images.pad', filename=item.arturl, height=600) }}"
-                                 class="img-rounded"/>
-                        </div>
-                        <div class="modal-footer">
-                            <dl class="dl-horizontal text-left">
-                                <dt class="regular">Summary</dt>
-                                <dd class="light">{{ item.summary }}</dd>
-                                <dt class="regular">Release Date</dt>
-                                <dd class="light">{{ item.releasedate[1] }}/{{ item.releasedate[2] }}/{{ item.releasedate[0] }}</dd>
-                                <dt class="regular">Rating</dt>
-                                <dd class="light">{{ item.rating|round(1, 'common') }}</dd>
-                                <dt class="regular">Added</dt>
-                                <dd class="light">{{ item.added_at }}</dd>
-                            </dl>
-                        </div>
-                    </div>
+                        <!-- End Modal video {{ loop.index }} -->
+                    {% endfor %}
                 </div>
             </div>
-            <!-- End Modal video {{ loop.index }} -->
-        {% endfor %}
-
+        </div>
     </div>
     <!-- End Movie/TV section -->
 
     <!-- Begin Music Section -->
-    <div class="row">
-        {% for item in values.subsonic_recentlyadded %}
-            <div class="col-md-4">
-                <a href="#" class="thumbnail" data-toggle="modal"
-                   data-target="#musicModal{{ loop.index }}">
-                    <div id="music-cover{{ loop.index }}">
-                        <img src="{{ item.coverArtExternalLink_sm }}"
-                             style="width: 100%;"/>
-                    </div>
-                </a>
-            </div>
+    <div class="panel panel-default">
+        <div class="panel-heading" data-toggle="collapse"
+             data-parent="#accordion" data-target="#collapseTwo">
+            <h4 class="panel-title extralight">
+                <a href="#">Music</a>
+            </h4>
+        </div>
+        <div id="collapseTwo" class="panel-collapse collapse in">
+            <div class="panel-body">
+                <div class="row">
+                    {% for item in values.subsonic_recentlyadded %}
+                        <div class="col-md-4">
+                            <a href="#" class="thumbnail" data-toggle="modal"
+                               data-target="#musicModal{{ loop.index }}">
+                                <img src="{{ item.coverArtExternalLink_sm }}"
+                                     style="width: 100%;"
+                                     id="video-cover{{ loop.index }}"/>
+                            </a>
+                        </div>
+                        <!-- Modal music {{ loop.index }}-->
+                        <div class="modal fade" id="musicModal{{ loop.index }}"
+                             tabindex="-1" role="dialog"
+                             aria-labelledby="music{{ loop.index }}"
+                             aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-body">
+                                        <img src="{{ item.coverArtExternalLink_xl }}"
+                                             style="width: 100%;"
+                                             class="img-rounded"/>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <dl class="dl-horizontal text-left">
+                                            <dt class="regular">Artist</dt>
+                                            <dd class="light">{{ item.artist }}</dd>
+                                            <dt class="regular">Album</dt>
+                                            <dd class="light">{{ item.album }}</dd>
+                                            <dt class="regular">Year</dt>
+                                            <dd class="light">{{ item.year }}</dd>
+                                            <dt class="regular">Genre</dt>
+                                            <dd class="light">{{ item.genre }}</dd>
+                                            <dt class="regular">Added</dt>
+                                            <dd class="light">{{ item.created }}</dd>
+                                        </dl>
+                                        <button type="button"
+                                                class="btn btn-default"
+                                                data-dismiss="modal">Close
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- End Modal music {{ loop.index }} -->
+                    {% endfor %}
 
-            <!-- Modal music {{ loop.index }}-->
-            <div class="modal fade" id="musicModal{{ loop.index }}"
-                 tabindex="-1" role="dialog"
-                 aria-labelledby="music{{ loop.index }}" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <button type="button" class="close"
-                                    data-dismiss="modal"><span
-                                    aria-hidden="true">&times;</span><span
-                                    class="sr-only">Close</span></button>
-                            <h3 class="modal-title regular"
-                                id="music{{ loop.index }}">{{ item.album }}</h3>
-                        </div>
-                        <div class="modal-body">
-                            <img src="{{ item.coverArtExternalLink_xl }}"
-                                 style="width: 100%;" class="img-rounded"/>
-                        </div>
-                        <div class="modal-footer">
-                            <dl class="dl-horizontal text-left">
-                                <dt class="regular">Artist</dt>
-                                <dd class="light">{{ item.artist }}</dd>
-                                <dt class="regular">Year</dt>
-                                <dd class="light">{{ item.year }}</dd>
-                                <dt class="regular">Genre</dt>
-                                <dd class="light">{{ item.genre }}</dd>
-                                <dt class="regular">Added</dt>
-                                <dd class="light">{{ item.created }}</dd>
-                            </dl>
-                        </div>
-                    </div>
                 </div>
+                <!-- End Music Section -->
             </div>
-            <!-- End Modal music {{ loop.index }} -->
-        {% endfor %}
-
+        </div>
     </div>
-    <!-- End Music Section -->
-
-
 </div>
-

@@ -6,6 +6,8 @@ from collections import OrderedDict, namedtuple
 from operator import itemgetter
 from time import localtime, strftime
 
+from PIL import Image
+
 import libsonic
 import xmltodict
 
@@ -403,8 +405,7 @@ class Plex(Service):
         # the lists.  The lists contain Movies and Shows separately.
         recently_added = [media for value in json_data['MediaContainer'] if
                           type(json_data['MediaContainer'][value]) == list for
-                          media
-                          in json_data['MediaContainer'][value] if
+                          media in json_data['MediaContainer'][value] if
                           media['@type'] != 'season']
         # remove extra data
         del json_data
@@ -463,7 +464,7 @@ class Plex(Service):
             now_playing_relevant_data.append(vid)
         return now_playing_relevant_data
 
-    def get_cover_image(self, arturl_mapped):
+    def get_cover_image(self, request_args):
         """
         Returns binary jpeg object from plex
 
@@ -473,13 +474,18 @@ class Plex(Service):
         if self._cover_mapping is None:
             # if _cover_mapping is empty we need to initialize Now Playing
             self.get_now_playing()
-        try:
-            resp = urllib2.urlopen(
-                urlparse.urljoin(self.server_internal_url_and_port,
-                                 self._cover_mapping[arturl_mapped]))
-        except TypeError, urllib2.HTTPError:
-            # // TODO insert logger warning and raise error
-            raise
+        args = list(request_args)
+        args = sorted(args)
+        if 'local' in args:
+            resp = open('/tmp/flask-images/' + args[0] + '.jpg', 'r')
+        else:
+            try:
+                resp = urllib2.urlopen(
+                    urlparse.urljoin(self.server_internal_url_and_port,
+                                     self._cover_mapping[args[0]]))
+            except TypeError, urllib2.HTTPError:
+                # // TODO insert LOGGER warning and raise error
+                raise
         return resp
 
     @property
@@ -624,43 +630,48 @@ class Plex(Service):
         return self._convert_xml_to_json(xml_data)
 
     def _get_video_data(self, video, get_type=None):
-        vidtype = video['@type']
-        if vidtype == 'episode':
-            video_data = dict(showtitle=video['@grandparentTitle'],
-                              episodetitle=video['@title'],
-                              arturl=self.server_internal_url_and_port + video[
-                                  '@grandparentThumb'])
-        elif vidtype == 'movie':
+        vidtype = video['@librarySectionTitle']
+        if vidtype == 'TV Shows':
+            plex_path_to_art = video['@parentThumb']
+            video_data = dict(showtitle=video['@parentTitle'],
+                              episode_number=video['@leafCount'],
+                              arturl=self.server_internal_url_and_port +
+                                     plex_path_to_art,
+                              summary=video['@parentSummary'],
+                              season=video['@title'])
+        elif vidtype == 'Movies':
+            plex_path_to_art = video['@thumb']
             video_data = dict(showtitle=video['@title'],
-                              arturl=self.server_internal_url_and_port + video[
-                                  '@thumb'])
+                              arturl=self._save_cover_art(
+                                  self.server_internal_url_and_port +
+                                  plex_path_to_art),
+                              summary=video['@summary'],
+                              releasedate=self._convert_release_date(
+                                  video['@originallyAvailableAt']))
         else:
             # encountered an unexpected video type
             msg = 'Unexpected media type {} encountered'.format(vidtype)
             self.logger.error(msg)
             raise exceptions.PlexAPIDataError(msg)
         # add common elements to video dict
-        arturlmapped_value = os.path.basename(video_data['arturl'])
-        video_data.update(type=video['@type'],
-                          summary=video['@summary'],
-                          releasedate=self._convert_release_date(
-                              video['@originallyAvailableAt']),
+        arturlmapped_value = os.path.basename(plex_path_to_art)
+        video_data.update(type=vidtype,
                           art_external_url=''.join([self._img_base_url,
                                                     arturlmapped_value]),
                           added_at=strftime('%m/%d/%Y %I:%M %p',
-                                            localtime(int(video['@addedAt'])))
-        )
+                                            localtime(int(video['@addedAt']))))
         # converts direct plex http link to thumbnail to internal mapping
         # security through obfuscation /s
-        self._cover_mapping[arturlmapped_value] = video_data['arturl']
+        self._cover_mapping[arturlmapped_value] = plex_path_to_art
         try:
             video_data['rating'] = float(video['@rating'])
         except KeyError:
             # log no rating info, set rating to 0
             self.logger.info('Rating data for {} is not available'.
                              format(
-                video_data['showtitle'] if vidtype == 'movie' else ' - '.
-                join([video_data['showtitle'], video_data['episodetitle']])))
+                video_data['showtitle'] if vidtype == 'Movies' else ' - '.
+                join([video_data['showtitle'], video_data['season'],
+                      video_data['episode_number']])))
             video_data['rating'] = 0
         if get_type == 'nowplaying':
             # only applicable if we want to retrieve now playing data from Plex
@@ -707,14 +718,35 @@ class Plex(Service):
     def _save_cover_art(self, cover_loc):
         img_data = urllib2.urlopen(
             urlparse.urljoin(self.server_internal_url_and_port, cover_loc))
-        img_dir = self._get_img_directory('covers')
+        img_dir = '/tmp/flask-images'
+        try:
+            os.mkdir(img_dir)
+        except OSError as err:
+            print err
         filename = 'thumbArt'
-        ext = '.jpg'
-        short_filepath = ''.join(
-            [filename, str(cover_loc.split('/')[-1]), '_', ext])
-        full_filepath = os.path.join(img_dir, short_filepath)
-        if not os.path.isfile(full_filepath):
-            self.logger.info('Write cover art file: {}'.format(full_filepath))
-            with open(full_filepath, 'wb') as img_file:
-                img_file.write(img_data.read())
+        exts = ['.jpg', '.thumbnail']
+        short_filepaths = [''.join([filename, str(cover_loc.split('/')[-1]),
+                                    '_', ext]) for ext in exts]
+        large_art_fp, thumb_art_fp = [os.path.join(img_dir, fp) for fp in
+                                      short_filepaths]
+        if not os.path.exists(large_art_fp):
+            try:
+                with open(large_art_fp, 'wb') as img_file:
+                    img_file.write(img_data.read())
+                self.logger.info(
+                    'Write cover art file: {}'.format(large_art_fp))
+            except IOError:
+                self.logger.error('Cover art file write failure: {}'.
+                                  format(large_art_fp))
+            else:
+                if not os.path.exists(thumb_art_fp):
+                    try:
+                        size = 199, 134.328
+                        im = Image.open(large_art_fp)
+                        im.thumbnail(size, Image.ANTIALIAS)
+                        im.save(thumb_art_fp, "JPEG")
+                    except IOError:
+                        self.logger.error('Cannot create thumbnail for : {}'.
+                                          format(large_art_fp))
         img_data.close()
+        return large_art_fp

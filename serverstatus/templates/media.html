@@ -1,18 +1,8 @@
 {% if values.now_playing %}
     {% include "now_playing.html" ignore missing with context %}
 {% elif values.subsonic_recentlyadded %}
-    <div class="panel panel-default" id="accordion">
-        <div class="panel-heading" data-toggle="collapse"
-             data-parent="#accordion" data-target="#collapseOne">
-            <h4 class="panel-title extralight">
-                Recently Added
-            </h4>
-        </div>
-        <div id="collapseOne" class="panel-collapse collapse in">
-            <div class="panel-body media" id="media">
-                {% include "recently_added.html" ignore missing with context %}
-            </div>
-        </div>
-        <!-- End Div Collapse-->
-    </div>
+
+
+    <!-- End Div Collapse-->
+    {% include "recently_added.html" ignore missing with context %}
 {% endif %}

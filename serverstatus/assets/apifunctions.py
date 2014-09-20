@@ -9,13 +9,10 @@ from serverstatus.assets.sysinfo import GetSystemInfo, get_network_speed, \
 import serverstatus.assets.wrappers as wrappers
 
 
-logger = logging.getLogger(__name__)
-
-
 class APIFunctions(object):
     def __init__(self, config):
-        self.logger = logger
-        logger.debug('{} initialized'.format(__name__))
+        self.logger = LOGGER
+        LOGGER.debug('{} initialized'.format(__name__))
         self.config = config
         self.subsonic = None
         self.plex = None
@@ -93,24 +90,27 @@ class APIFunctions(object):
             try:
                 self.subsonic = SubSonic(self.config['SUBSONIC_INFO'])
             except KeyError:
-                logger.debug('Subsonic not loaded yet')
+                LOGGER.debug('Subsonic not loaded yet')
         if self.plex is None:
             try:
                 self.plex = Plex(self.config['PLEX_INFO'])
             except KeyError:
-                logger.debug('Plex not loaded yet')
+                LOGGER.debug('Plex not loaded yet')
         if self.server_sync is None:
             try:
                 self.server_sync = ServerSync(self.config['SERVERSYNC_INFO'])
             except KeyError:
-                logger.debug('Server Sync not loaded yet')
+                LOGGER.debug('Server Sync not loaded yet')
         if self.crashplan is None:
             try:
                 self.crashplan = CheckCrashPlan(self.config['CRASHPLAN_INFO'])
             except KeyError:
-                logger.debug('CrashPlan not loaded yet')
+                LOGGER.debug('CrashPlan not loaded yet')
         if self.weather is None:
             try:
                 self.weather = ForecastData(self.config['WEATHER'])
             except KeyError:
-                logger.debug('weather not loaded yet')
+                LOGGER.debug('weather not loaded yet')
+
+
+LOGGER = logging.getLogger(__name__)
