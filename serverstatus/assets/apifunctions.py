@@ -48,9 +48,15 @@ class APIFunctions(object):
 
     @wrappers.logger('debug')
     def services(self):
+        # //TODO need to retest server status here, right now it's one as done
         self._load_configs()
         servers = [self.plex, self.subsonic, self.server_sync, self.crashplan]
-        servers_mapped = [getattr(server, 'getStatusMapping') for server in
+        for server in servers:
+            status = server.get_connection_status
+            self.logger.debug('{} connection updated to: {}'.
+                              format(server.service_name,
+                                     status))
+        servers_mapped = [getattr(server, 'get_status_mapping') for server in
                           servers]
         servers_dict = OrderedDict()
         for server in servers_mapped:
@@ -63,6 +69,7 @@ class APIFunctions(object):
         subsonic = self.subsonic
         plex = self.plex
         return dict(
+            plex_nowplaying=plex.get_now_playing(),
             subsonic_recentlyadded=subsonic.get_recently_added(num_results=6),
             plex_recentlyadded=plex.get_recently_added(num_results=6))
 

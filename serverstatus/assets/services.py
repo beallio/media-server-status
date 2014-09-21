@@ -5,9 +5,9 @@ import urlparse
 from collections import OrderedDict, namedtuple
 from operator import itemgetter
 from time import localtime, strftime
+import datetime
 
 from PIL import Image
-
 import libsonic
 import xmltodict
 
@@ -15,37 +15,40 @@ from serverstatus import app
 import serverstatus.assets.exceptions as exceptions
 
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 class Service(object):
     def __init__(self, service_info):
         assert type(service_info) is dict
-        self.logger = logger
+        self.logger = LOGGER
         self.logger.debug(
             '{} class initialized'.format(self.__class__.__name__))
         self.server_info = service_info
         self.SERVICES_STATUS_MAPPING = self._get_status_mappings_dict()
-        self.image_dir = 'serverstatus/static/img/tmp/'
+        self.image_dir = ''.join([app.config.get('TEMP_LOCATION', 'img/tmp')
+                                  + 'flask-images'])
         self.service_name = None
         self.connect_status = None
         self.server_full_url = None
         self.resolved_status_mapping = dict()
 
     @property
-    def getStatusMapping(self):
+    def get_status_mapping(self):
+        self.resolved_status_mapping = self._get_status_mapping()
         return self.resolved_status_mapping
 
     @property
-    def getConnectionStatus(self):
+    def get_connection_status(self):
+        self.connect_status = self._test_server_connection()
         return self.connect_status
 
     @property
-    def getServerFullURL(self):
+    def get_server_full_url(self):
         return self.server_full_url
 
     @property
-    def getExternalURL(self):
+    def get_external_url(self):
         return self._get_config_attrib('external_url')
 
     def _test_server_connection(self):
@@ -60,8 +63,8 @@ class Service(object):
                 str(self.connect_status)]}
             output[service_name][
                 'title'] = self._add_service_name_to_status_mapping()
-            if self.getExternalURL:
-                output[service_name]['external_url'] = self.getExternalURL
+            if self.get_external_url:
+                output[service_name]['external_url'] = self.get_external_url
         except KeyError:
             pass
         return output
@@ -89,6 +92,7 @@ class Service(object):
             '/')
 
     def _test_file_path(self, file_path_key):
+        # //TODO remove after testing
         output = None
         try:
             file_path = self.server_info[file_path_key]
@@ -282,6 +286,9 @@ class SubSonic(Service):
             [self._img_base_url, str(entry['coverArt']), '&size=145'])
         entry['coverArtExternalLink_xl'] = ''.join(
             [self._img_base_url, str(entry['coverArt']), '&size=500'])
+        created_date = datetime.datetime.strptime(entry[u'created'],
+                                                  '%Y-%m-%dT%H:%M:%S')
+        entry[u'created'] = created_date.strftime('%m/%d/%Y %I:%M%p')
         try:
             # Return progress on currently playing song(s).  No good way to do
             # this since Subsonic doesn't have access to this info through
@@ -347,18 +354,18 @@ class CheckCrashPlan(Service):
 class ServerSync(Service):
     def __init__(self, server_info):
         Service.__init__(self, server_info)
-        self.lockfile_path = self._test_file_path('lockfile_path')
+        self.server_info = server_info
+        self.lockfile_path = self.server_info['lockfile_path']
         self.service_name = 'server-sync'
         self.connect_status = self._test_server_connection()
         self.resolved_status_mapping = self._get_status_mapping()
 
     def _test_server_connection(self):
         try:
-            lockfile_exists = os.path.exists(self.lockfile_path)
-            self.logger.debug(
-                'Server Sync Lockfile exists {}'.format(lockfile_exists))
-            return lockfile_exists
+            return os.path.exists(self.lockfile_path)
         except TypeError:
+            self.logger.debug('Server Sync Lockfile does not exist at {}'.
+                              format(self.lockfile_path))
             return False
 
 
@@ -403,21 +410,29 @@ class Plex(Service):
         # the media value we want are contained in lists so loop through the
         # MediaContainer, find the lists of data, and return each value in
         # the lists.  The lists contain Movies and Shows separately.
-        recently_added = [media for value in json_data['MediaContainer'] if
-                          type(json_data['MediaContainer'][value]) == list for
-                          media in json_data['MediaContainer'][value] if
-                          media['@type'] != 'season']
+
+        movies = [media for value in json_data['MediaContainer'] if
+                  type(json_data['MediaContainer'][value]) == list for
+                  media in json_data['MediaContainer'][value] if
+                  media['@type'] != 'season']
+        tv_shows = [media for value in json_data['MediaContainer'] if
+                    type(json_data['MediaContainer'][value]) == list for
+                    media in json_data['MediaContainer'][value] if
+                    media['@type'] == 'season']
         # remove extra data
         del json_data
         # sort the recently added list by date in descending order
-        recently_added = sorted(recently_added, key=itemgetter('@addedAt'),
-                                reverse=True)
+        movies = sorted(movies, key=itemgetter('@addedAt'),
+                        reverse=True)
+        tv_shows = sorted(tv_shows, key=itemgetter('@addedAt'),
+                          reverse=True)
         # trim the list to the number of results we want
-        recently_added_trimmed = recently_added[:num_results]
-        del recently_added
-        recently_added_trimmed = [self._get_video_data(video) for video in
-                                  recently_added_trimmed]
-        return recently_added_trimmed
+        movies_trimmed = movies[:num_results]
+        tv_shows_trimmed = tv_shows[:num_results]
+        return dict(Movies=[self._get_video_data(video) for video in
+                            movies_trimmed],
+                    TVShows=[self._get_video_data(video) for video in
+                             tv_shows_trimmed])
 
     def get_now_playing(self):
         """
@@ -426,7 +441,7 @@ class Plex(Service):
         :return: dict()
         """
 
-        def generate_video_data(vid_data):
+        def generate_video_data(vid_data, api_call=None):
             """
             Generator function for creating relevant video data.  Takes JSON
             data, checks if is data is an OrderedDict
@@ -450,17 +465,21 @@ class Plex(Service):
                 self.logger.error(msg)
                 raise exceptions.PlexAPIDataError(msg)
             for video in video_list:
-                # Grab relevant data about Video from JSON data
-                yield self._get_video_data(video)
+                # Grab relevant data about Video from JSON data, send the API
+                # call to calculate transcodes, otherwise it will skip and
+                # return 0
+                yield self._get_video_data(video, api_call)
+            return
 
-        self.transcodes = 0  # reset transcode count
+        self.transcodes = 0  # reset serverinfo count
         api_call = 'nowplaying'
         now_playing_relevant_data = list()
         json_data = self._get_xml_convert_to_json(api_call)
         if not int(json_data['MediaContainer']['@size']):
             # Nothing is currently playing in plex
             return None
-        for vid in generate_video_data(json_data['MediaContainer']['Video']):
+        for vid in generate_video_data(json_data['MediaContainer']['Video'],
+                                       api_call):
             now_playing_relevant_data.append(vid)
         return now_playing_relevant_data
 
@@ -468,7 +487,7 @@ class Plex(Service):
         """
         Returns binary jpeg object from plex
 
-        :type cover_loc: unicode or str
+        :type request_args: OrderedDict
         :return:
         """
         if self._cover_mapping is None:
@@ -498,10 +517,24 @@ class Plex(Service):
 
         :return: int
         """
-        # // TODO need to stream line this once Plex code is fully
-        # // integrated and out of testing
-        _ = self.get_now_playing()
+        server_info = self.get_plex_server_info()
+        self.transcodes = server_info.get('transcoderActiveVideoSessions', 0)
         return self.transcodes
+
+    def get_plex_server_info(self):
+        json_show_data = self._get_xml_convert_to_json('serverinfo')
+        server_data = json_show_data.get('MediaContainer', None)
+        data_dict = {str(key.strip('@')): server_data[key] for key in
+                     server_data if type(server_data[key]) is unicode or type(
+            server_data[key]) is str}
+        for key in data_dict:
+            try:
+                data_dict[key] = int(data_dict[key])
+            except ValueError:
+                if ',' in data_dict[key]:
+                    split_values = data_dict[key].split(',')
+                    data_dict[key] = [int(val) for val in split_values]
+        return data_dict
 
     def _test_server_connection(self):
         """
@@ -518,7 +551,7 @@ class Plex(Service):
                 pass
         except KeyError:
             pass
-        resp = self._get_plex_api_data('transcode')
+        resp = self._get_plex_api_data('serverinfo')
         is_connectable = resp is not None
         if not is_connectable:
             self.logger.error('Could not connect to Plex server')
@@ -529,7 +562,7 @@ class Plex(Service):
         https://code.google.com/p/plex-api/wiki/PlexWebAPIOverview
         contains information required Plex HTTP APIs
 
-        transcode: Transcode bitrateinfo, myPlexauthentication info
+        serverinfo: Transcode bitrateinfo, myPlexauthentication info
         nowplaying: This will retrieve the "Now Playing" Information of the PMS.
         librarysections: Contains all of the sections on the PMS. This acts as
                         a directory and you are able to "walk" through it.
@@ -549,7 +582,7 @@ class Plex(Service):
         :return:
         """
         url_api_mapping = dict(
-            transcode='/',
+            serverinfo='/',
             nowplaying='/status/sessions',
             librarysections='/library/sections',
             prefs='/:/prefs',
@@ -630,15 +663,19 @@ class Plex(Service):
         return self._convert_xml_to_json(xml_data)
 
     def _get_video_data(self, video, get_type=None):
-        vidtype = video['@librarySectionTitle']
+        # need a separate dict for section mapping since Plex returns different
+        # data for Now Playing and Recently Added
+        library_section_mapping = {'1': 'Movies', '2': 'TV Shows'}
+        # need a separate dict for section mapping since Plex returns different
+        # data for Now Playing and Recently Added
+        # all the video.gets below are to handle the different mappings
+        # Plex sends for Now Playing/Recently Added.
+        vidtype = video.get('@librarySectionTitle',
+                            library_section_mapping.get(
+                                video.get('@librarySectionID', 0)))
         if vidtype == 'TV Shows':
-            plex_path_to_art = video['@parentThumb']
-            video_data = dict(showtitle=video['@parentTitle'],
-                              episode_number=video['@leafCount'],
-                              arturl=self.server_internal_url_and_port +
-                                     plex_path_to_art,
-                              summary=video['@parentSummary'],
-                              season=video['@title'])
+            video_data = self._get_tv_show_data(video, get_type)
+            plex_path_to_art = video['@thumb']
         elif vidtype == 'Movies':
             plex_path_to_art = video['@thumb']
             video_data = dict(showtitle=video['@title'],
@@ -681,8 +718,8 @@ class Plex(Service):
                     video['@duration'])) * 100.0
             except KeyError:
                 # video's not playing - not an issue
+                video_data['progress'] = 0
                 pass
-            self._calc_transcode_sessions(video)
         return video_data
 
     def _calc_transcode_sessions(self, video_data):
@@ -700,11 +737,12 @@ class Plex(Service):
 
     @staticmethod
     def _convert_release_date(reldate):
+        # // TODO I don't need this really, I can convert to datetime object and be done with it
+
         """
         Converts date in string format YYYY-MM-DD to namedtuple
 
         > _convert_release_date('2013-11-22')
-        >>> ReleaseDate(year=2013, month=11, day=22)
 
         :type reldate: unicode
         :return: namedtuple
@@ -750,3 +788,43 @@ class Plex(Service):
                                           format(large_art_fp))
         img_data.close()
         return large_art_fp
+
+    def _get_tv_show_data(self, video, get_type=None):
+        plex_path_to_art = video['@thumb']
+        video_data = dict(showtitle=
+                          video.get('@parentTitle',
+                                    video.get('@grandparentTitle')),
+                          episode_number=video.get('@leafCount',
+                                                   video.get('@index')),
+                          arturl=self.server_internal_url_and_port +
+                                 plex_path_to_art,
+                          summary=video.get('@parentSummary',
+                                            video.get('@summary')),
+                          season=video['@title'])
+        if get_type != 'nowplaying':
+            json_show_data = self._get_xml_convert_to_json('serverinfo',
+                                                           video['@key'].
+                                                           lstrip('/'))
+            vid = json_show_data['MediaContainer']
+            video_data.update(rating=vid['@grandparentContentRating'],
+                              studio=vid['@grandparentStudio'])
+            try:
+                # if there's more than one episode in the season
+                vid_we_want = vid['Video'][
+                    int(video_data['episode_number']) - 1]
+            except KeyError:
+                # first show in season
+                vid_we_want = vid['Video']
+            # get originally date playing on TV
+            aired_date = datetime.datetime.strptime(
+                vid_we_want['@originallyAvailableAt'],
+                '%Y-%m-%d')
+            aired_date = aired_date.strftime('%m/%d/%Y')
+            video_data.update(title=vid_we_want['@title'],
+                              aired_date=aired_date)
+
+            # Set individual show summary to parent summary if show summary does
+            # not exist
+            if vid_we_want['@summary'] != '':
+                video_data['summary'] = vid_we_want['@summary']
+        return video_data

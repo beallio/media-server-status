@@ -1,3 +1,7 @@
+* {
+    font-family: light, sans-serif;
+}
+
 body {
     text-align: center;
     }
@@ -14,17 +18,19 @@ body {
         }
 
     .extralight {
-        font-family:"extralight";
+        font-family: "extralight", sans-serif;
         }
     .light {
-    font-family:"light";
-}
-[data-icon]:before {
-font-family: 'MeteoconsRegular';
-content: attr(data-icon);
-}
+        font-family: "light", sans-serif;
+    }
+
 .regular {
-font-family:"regular";
+    font-family: "regular", sans-serif;
+}
+
+[data-icon]:before {
+    font-family: 'MeteoconsRegular', sans-serif;
+    content: attr(data-icon);
 }
 
 /* Changes carousel slide transition to fade transition
@@ -62,11 +68,11 @@ background-image: none;
 /* Now Playing Progress Bar CSS */
 .now-playing-progress-bar {
 height: 5px;
-margin-top: 0px;
-margin-bottom: 0px;
--webkit-border-radius: 0px;
--moz-border-radius: 0px;
-border-radius: 0px;
+    margin-top: 0;
+    margin-bottom: 0;
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    border-radius: 0;
 }
 /* End of Now Playing Progress Bar CSS */
 
@@ -100,27 +106,12 @@ a.btn_mod {
 }
 
 .hr_break {
-    margin-top:0px;
+    margin-top: 0;
     margin-bottom:15px;
 }
 
-.album_info {
-    margin-top: 10px;
-    margin-bottom: 0px;
-    float: left;
-    font-family: "extralight";
-    text-align: left;
-}
-
-.recently_added {
-    overflow: auto;
-    height: 100%;
-    width: 100%;
-    margin: 0 auto
-}
-
 .weather-bottom {
-    clear:both;
+
     margin-top:-20px
 }
 
@@ -134,13 +125,14 @@ a.btn_mod {
 }
 
 .weather-icon h1 {
-    font-size: 900%;
-    margin-bottom: 0px;
-    margin-top: 0px;
+    font-size: 800%;
+    margin-bottom: 0;
+    margin-top: 10px;
 }
 
-#weather.panel-body.slider {
-    padding-top: 0px;
+#weather.panel-body {
+    padding-top: 0;
+    padding-bottom: 0;
 }
 
 .extra-bottom {

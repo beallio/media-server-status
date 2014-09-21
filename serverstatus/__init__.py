@@ -4,15 +4,20 @@ import logging
 import logging.handlers as handlers
 
 from flask import Flask
+from flask_images import Images
 
 
 app = Flask(__name__)
+app.secret_key = 'Monkey'
+images = Images(app)
+
 app.config.update(
     APPNAME='server_status',
     LOGGINGMODE=logging.DEBUG,
     APPLOCATION=os.path.join(os.path.dirname(os.path.dirname(
         os.path.realpath(__file__)))),
     LOG_LOCATION='/var/tmp',
+    TEMP_LOCATION='var/tmp',
     CONFIG_LOCATION='/var/test_data.py')
 app.config['APP_MODULESLOCATION'] = os.path.join(app.config['APPLOCATION'],
                                                  'serverstatus')

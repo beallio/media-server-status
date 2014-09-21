@@ -78,6 +78,9 @@ class BackEndCalls(object):
         """
         values = None
         status = 404
+        values = getattr(self.api_functions, str(data).lstrip('_'))()
+        status = 200
+        """
         try:
             values = getattr(self.api_functions, str(data).lstrip('_'))()
             status = 200
@@ -85,7 +88,7 @@ class BackEndCalls(object):
             app.logger.error(err)
             # no api function for call, return empty json
         except:
-            app.logger.error('An unknown error occurred')
+            app.logger.error('An unknown error occurred')"""
         return values, status
 
     def get_image_data(self, flask_request):

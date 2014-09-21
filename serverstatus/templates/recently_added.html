@@ -1,5 +1,5 @@
 <div class="row">
-    <div class="col-md-12">
+    <div class="col-sm-12">
         <h3 class="extralight">
             Recently Added
         </h3>
@@ -7,31 +7,35 @@
 </div>
 <div class="panel-group" id="accordion">
     <!-- Begin Movie/TV section -->
+    {% for videogroup in values.plex_recentlyadded|dictsort(false, 'value') %}
+        {% set vidgroup = videogroup[0] %}
+        {% set items = videogroup[1] %}
     <div class="panel panel-default">
         <div class="panel-heading" data-toggle="collapse"
-             data-parent="#accordion" data-target="#collapseOne">
+             data-parent="#accordion" data-target="#collapse{{ vidgroup }}">
             <h4 class="panel-title extralight">
-                <a href="#">Videos</a>
+                <a href="#">{{ vidgroup }}</a>
             </h4>
         </div>
-        <div id="collapseOne" class="panel-collapse collapse in">
+        <div id="collapse{{ vidgroup }}" class="panel-collapse collapse in">
             <div class="panel-body">
                 <div class="row">
-                    {% for item in values.plex_recentlyadded %}
-                        <div class="col-md-4">
+                    {% for item in items %}
+                        <div class="col-sm-4">
                             <a href="#" class="thumbnail" data-toggle="modal"
-                               data-target="#videoModal{{ loop.index }}">
+                               data-target="#{{ vidgroup }}Modal{{ loop.index }}">
                                 <img src="{{ item.art_external_url }}"
-                                     style="width: 100%;"
-                                     id="video-cover{{ loop.index }}"/>
+                                     style="width: 100%; max-height: 214px;"
+                                     id="{{ vidgroup }}-cover{{ loop.index }}"/>
                             </a>
                         </div>
 
-                        <!-- Modal video {{ loop.index }}-->
-                        <div class="modal fade" id="videoModal{{ loop.index }}"
+                        <!-- Modal {{ vidgroup }} {{ loop.index }}-->
+                        <div class="modal fade"
+                             id="{{ vidgroup }}Modal{{ loop.index }}"
                              tabindex="-1"
                              role="dialog"
-                             aria-labelledby="video{{ loop.index }}"
+                             aria-labelledby="{{ vidgroup }}{{ loop.index }}"
                              aria-hidden="true">
                             <div class="modal-dialog">
                                 <div class="modal-content">
@@ -62,8 +66,14 @@
                                                 <dd class="light">{{ item.season }}</dd>
                                                 <dt class="regular">Episode</dt>
                                                 <dd class="light">{{ item.episode_number }}</dd>
+                                                <dt class="regular">Title</dt>
+                                                <dd class="light">{{ item.title }}</dd>
                                                 <dt class="regular">Summary</dt>
                                                 <dd class="light">{{ item.summary }}</dd>
+                                                <dt class="regular">Originally
+                                                                    Aired
+                                                </dt>
+                                                <dd class="light">{{ item.aired_date }}</dd>
                                                 <dt class="regular">Added</dt>
                                                 <dd class="light">{{ item.added_at }}</dd>
 
@@ -74,15 +84,22 @@
                                                 data-dismiss="modal">Close
                                         </button>
                                     </div>
+                                    <!-- End Modal footer -->
                                 </div>
+                                <!-- End Modal content -->
                             </div>
-                        </div>
-                        <!-- End Modal video {{ loop.index }} -->
+                            <!-- End Modal dialog -->
+                        </div> <!-- End Modal -->
+                        <!-- End Modal {{ vidgroup }} {{ loop.index }} -->
                     {% endfor %}
                 </div>
+                <!-- End row -->
             </div>
+            <!-- End Panel body -->
         </div>
-    </div>
+        <!-- End Panel collapse -->
+    </div> <!-- End Panel {{ vidgroup }} -->
+    {% endfor %}
     <!-- End Movie/TV section -->
 
     <!-- Begin Music Section -->
@@ -97,8 +114,8 @@
             <div class="panel-body">
                 <div class="row">
                     {% for item in values.subsonic_recentlyadded %}
-                        <div class="col-md-4">
-                            <a href="#" class="thumbnail" data-toggle="modal"
+                        <div class="col-sm-4">
+                        <a href="#" class="thumbnail" data-toggle="modal"
                                data-target="#musicModal{{ loop.index }}">
                                 <img src="{{ item.coverArtExternalLink_sm }}"
                                      style="width: 100%;"
