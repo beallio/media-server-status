@@ -98,16 +98,29 @@ class BackEndCalls(object):
         {plex|subsonic} is the server requested.  Routes request to appropriate
         server to get thumbnail image data
 
-        :type flask_request: werkzeug.local.LocalProxy
+        :type flask_request: werkzeug.local.Request
         :return:
         """
+
+        def parse_request(request_args):
+            parsed_values = dict()
+            for arg in request_args:
+                if request_args[arg] == '':
+                    parsed_values['plex_id'] = arg
+                    continue
+                try:
+                    parsed_values[arg] = bool(request_args[arg])
+                except ValueError:
+                    parsed_values[arg] = request_args[arg]
+            return parsed_values
+
         resp = Response('null', status=404, mimetype='text/plain')
         # convert to string since flask requests returns unicode
         data_low = str(flask_request.view_args.get('data', None).lower())
         if data_low == 'plex':
+            args = parse_request(flask_request.args)
             resp = Response(
-                self.api_functions._get_plex_cover_art(flask_request.args),
-                status=200,
+                self.api_functions._get_plex_cover_art(args), status=200,
                 mimetype='image/jpeg')
         elif data_low == 'subsonic':
             resp = Response(self._check_subsonic_request(flask_request),
@@ -129,8 +142,10 @@ class BackEndCalls(object):
         Parses flask request to determine parameters for requesting cover art
         from Subsonic server
 
-        :type request_args: werkzeug.local.LocalProxy
-        :return: binary
+        Parameters
+        ----------
+        request_args : flask.Request.args
+            Description of parameter `request_args`.
         """
         query_string = request_args.query_string
         args = request_args.args

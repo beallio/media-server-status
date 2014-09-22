@@ -20,3 +20,7 @@ class PlexConnectionError(Exception):
 
 class PlexAPIDataError(Exception):
     pass
+
+
+class PlexImageError(Exception):
+    pass

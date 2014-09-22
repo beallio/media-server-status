@@ -48,7 +48,6 @@ class APIFunctions(object):
 
     @wrappers.logger('debug')
     def services(self):
-        # //TODO need to retest server status here, right now it's one as done
         self._load_configs()
         servers = [self.plex, self.subsonic, self.server_sync, self.crashplan]
         for server in servers:
@@ -83,9 +82,9 @@ class APIFunctions(object):
         self._load_configs()
         return dict(plex_transcodes=self.plex.get_transcodes)
 
-    def _get_plex_cover_art(self, query):
+    def _get_plex_cover_art(self, args):
         self._load_configs()
-        return self.plex.get_cover_image(query)
+        return self.plex.get_cover_image(**args)
 
     def _get_subsonic_cover_art(self, cover_id, size):
         self._load_configs()

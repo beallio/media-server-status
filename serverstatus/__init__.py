@@ -16,9 +16,11 @@ app.config.update(
     LOGGINGMODE=logging.DEBUG,
     APPLOCATION=os.path.join(os.path.dirname(os.path.dirname(
         os.path.realpath(__file__)))),
-    LOG_LOCATION='/var/tmp',
-    TEMP_LOCATION='var/tmp',
+    LOG_LOCATION='/tmp',
+    TEMP_LOCATION='/tmp',
     CONFIG_LOCATION='/var/test_data.py')
+app.config['TEMP_IMAGES'] = os.path.join(app.config['TEMP_LOCATION'],
+                                         'flask-images')
 app.config['APP_MODULESLOCATION'] = os.path.join(app.config['APPLOCATION'],
                                                  'serverstatus')
 

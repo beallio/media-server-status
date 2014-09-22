@@ -2,12 +2,12 @@ import os
 import logging
 import urllib2
 import urlparse
-from collections import OrderedDict, namedtuple
+from collections import OrderedDict
 from operator import itemgetter
 from time import localtime, strftime
 import datetime
 
-from PIL import Image
+from PIL import Image, ImageOps
 import libsonic
 import xmltodict
 
@@ -135,7 +135,8 @@ class Service(object):
 
     def _log_warning_for_missing_config_value(self, cls_name, config_val,
                                               default):
-        # Log warning that config value for plex is missing from config file.  Using default value instead
+        # Log warning that config value for plex is missing from config file.
+        # Using default value instead
         self.logger.warning(
             '{config_val} missing from config value for {cls_name}.  Using {default} instead'.
             format(cls_name=cls_name, default=default, config_val=config_val))
@@ -483,28 +484,46 @@ class Plex(Service):
             now_playing_relevant_data.append(vid)
         return now_playing_relevant_data
 
-    def get_cover_image(self, request_args):
+    def get_cover_image(self, plex_id, thumbnail=None, local=None):
         """
-        Returns binary jpeg object from plex
+        Returns binary jpeg object for Plex item found local temp directory as
+        set in config file.  Checks request argument against mapped value from
+        Plex item ID
 
-        :type request_args: OrderedDict
-        :return:
+        :param plex_id: metadata coverart ID that corresponds to mapping
+        dictionary
+        :type plex_id: str
+        :param thumbnail: boolean values that tells us to return thumbnail
+        image if True.  Returns full scale image if False
+        :type thumbnail: bool or NoneType
+        :param local: boolean value that tells us to pull image from Plex
+        server or return local copy
+        :type local: bool or NoneType
+        :return: binary
+        :raises: exceptions.PlexImageError
         """
+        thumbnail = not thumbnail is None
+        local = not local is None
         if self._cover_mapping is None:
             # if _cover_mapping is empty we need to initialize Now Playing
             self.get_now_playing()
-        args = list(request_args)
-        args = sorted(args)
-        if 'local' in args:
-            resp = open('/tmp/flask-images/' + args[0] + '.jpg', 'r')
+        if thumbnail:
+            try:
+                resp = open('/tmp/flask-images/' + plex_id + '.thumbnail', 'rb')
+            except IOError as err:
+                raise exceptions.PlexImageError(err)
+        elif local:
+            try:
+                resp = open('/tmp/flask-images/' + plex_id + '.jpg', 'rb')
+            except IOError as err:
+                raise exceptions.PlexImageError(err)
         else:
             try:
                 resp = urllib2.urlopen(
                     urlparse.urljoin(self.server_internal_url_and_port,
-                                     self._cover_mapping[args[0]]))
-            except TypeError, urllib2.HTTPError:
-                # // TODO insert LOGGER warning and raise error
-                raise
+                                     self._cover_mapping[plex_id]))
+            except (TypeError, urllib2.HTTPError) as err:
+                raise exceptions.PlexImageError(err)
         return resp
 
     @property
@@ -633,6 +652,7 @@ class Plex(Service):
 
         :param api_call:
         :return: str
+        :raises: exceptions.PlexConnectionError
         """
         if api_suffix is None:
             # no extra api call for this
@@ -675,22 +695,23 @@ class Plex(Service):
                                 video.get('@librarySectionID', 0)))
         if vidtype == 'TV Shows':
             video_data = self._get_tv_show_data(video, get_type)
-            plex_path_to_art = video['@thumb']
         elif vidtype == 'Movies':
-            plex_path_to_art = video['@thumb']
+            release_date = datetime.datetime.strptime(
+                video['@originallyAvailableAt'],
+                '%Y-%m-%d')
+            release_date = release_date.strftime('%m/%d/%Y')
             video_data = dict(showtitle=video['@title'],
-                              arturl=self._save_cover_art(
-                                  self.server_internal_url_and_port +
-                                  plex_path_to_art),
                               summary=video['@summary'],
-                              releasedate=self._convert_release_date(
-                                  video['@originallyAvailableAt']))
+                              releasedate=release_date)
         else:
             # encountered an unexpected video type
             msg = 'Unexpected media type {} encountered'.format(vidtype)
             self.logger.error(msg)
             raise exceptions.PlexAPIDataError(msg)
         # add common elements to video dict
+        plex_path_to_art = video['@thumb']
+        self._save_cover_art(self.server_internal_url_and_port +
+                             plex_path_to_art)
         arturlmapped_value = os.path.basename(plex_path_to_art)
         video_data.update(type=vidtype,
                           art_external_url=''.join([self._img_base_url,
@@ -708,7 +729,7 @@ class Plex(Service):
                              format(
                 video_data['showtitle'] if vidtype == 'Movies' else ' - '.
                 join([video_data['showtitle'], video_data['season'],
-                      video_data['episode_number']])))
+                      str(video_data['episode_number'])])))
             video_data['rating'] = 0
         if get_type == 'nowplaying':
             # only applicable if we want to retrieve now playing data from Plex
@@ -722,52 +743,30 @@ class Plex(Service):
                 pass
         return video_data
 
-    def _calc_transcode_sessions(self, video_data):
-        """
-        Calculates number of transcode sessions in now playing
-        :param video_data:
-        :return: None
-        """
-        video_transcoding = video_data['TranscodeSession'][
-                                '@videoDecision'] == 'transcode'
-        audio_transcoding = video_data['TranscodeSession'][
-                                '@audioDecision'] == 'transcode'
-        if any([video_transcoding, audio_transcoding]):
-            self.transcodes += 1
-
-    @staticmethod
-    def _convert_release_date(reldate):
-        # // TODO I don't need this really, I can convert to datetime object and be done with it
-
-        """
-        Converts date in string format YYYY-MM-DD to namedtuple
-
-        > _convert_release_date('2013-11-22')
-
-        :type reldate: unicode
-        :return: namedtuple
-        """
-        split_rel_date = reldate.split('-')
-        split_date_to_int = [int(x) for x in split_rel_date]
-        tuple_date = namedtuple(typename='ReleaseDate',
-                                field_names=['year', 'month', 'day'])
-        return tuple_date._make(split_date_to_int)
-
     def _save_cover_art(self, cover_loc):
+        # retrieve image data from Plex server metadata
         img_data = urllib2.urlopen(
             urlparse.urljoin(self.server_internal_url_and_port, cover_loc))
-        img_dir = '/tmp/flask-images'
-        try:
-            os.mkdir(img_dir)
-        except OSError as err:
-            print err
-        filename = 'thumbArt'
+        # pull temporary image directory location from flask configuration
+        img_dir = app.config.get('TEMP_IMAGES', '/tmp')
+        # check if temp directory exists, if not attemp to create directory
+        if not os.path.exists(img_dir):
+            try:
+                os.mkdir(img_dir)
+                self.logger.debug('Creating temporary image directory {}'.
+                                  format(img_dir))
+            except OSError as err:
+                self.logger.error(('Failure creating temporary image directory'
+                                   ' {}.\nError message {}').format(img_dir,
+                                                                    err))
+                raise
         exts = ['.jpg', '.thumbnail']
-        short_filepaths = [''.join([filename, str(cover_loc.split('/')[-1]),
-                                    '_', ext]) for ext in exts]
+        short_filepaths = [''.join([str(cover_loc.split('/')[-1]),
+                                    ext]) for ext in exts]
         large_art_fp, thumb_art_fp = [os.path.join(img_dir, fp) for fp in
                                       short_filepaths]
         if not os.path.exists(large_art_fp):
+            # create plex cover art file if file does not exist
             try:
                 with open(large_art_fp, 'wb') as img_file:
                     img_file.write(img_data.read())
@@ -778,26 +777,34 @@ class Plex(Service):
                                   format(large_art_fp))
             else:
                 if not os.path.exists(thumb_art_fp):
+                    # create plex cover thumbnail file if file does not exist
                     try:
-                        size = 199, 134.328
+                        size = (144, 214)
                         im = Image.open(large_art_fp)
-                        im.thumbnail(size, Image.ANTIALIAS)
+                        # im.resize(size, Image.NEAREST)
+                        im = ImageOps.fit(image=im, size=size,
+                                          method=Image.ANTIALIAS)
                         im.save(thumb_art_fp, "JPEG")
+                        self.logger.info('Write thumbnail file: {}'.
+                                         format(thumb_art_fp))
                     except IOError:
                         self.logger.error('Cannot create thumbnail for : {}'.
-                                          format(large_art_fp))
+                                          format(thumb_art_fp))
+                else:
+                    self.logger.debug('Thumbnail art already exists at: {}'.
+                                      format(thumb_art_fp))
+        else:
+            self.logger.debug('Cover art already exists at: {}'.
+                              format(large_art_fp))
         img_data.close()
         return large_art_fp
 
     def _get_tv_show_data(self, video, get_type=None):
-        plex_path_to_art = video['@thumb']
         video_data = dict(showtitle=
                           video.get('@parentTitle',
                                     video.get('@grandparentTitle')),
-                          episode_number=video.get('@leafCount',
-                                                   video.get('@index')),
-                          arturl=self.server_internal_url_and_port +
-                                 plex_path_to_art,
+                          episode_number=int(video.get('@leafCount',
+                                                       video.get('@index'))),
                           summary=video.get('@parentSummary',
                                             video.get('@summary')),
                           season=video['@title'])

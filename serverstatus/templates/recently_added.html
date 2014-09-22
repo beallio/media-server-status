@@ -11,10 +11,11 @@
         {% set vidgroup = videogroup[0] %}
         {% set items = videogroup[1] %}
     <div class="panel panel-default">
-        <div class="panel-heading" data-toggle="collapse"
+        <div class="panel-heading" {% if values.plex_nowplaying == 'null' %}
+             data-toggle="collapse" {% endif %}
              data-parent="#accordion" data-target="#collapse{{ vidgroup }}">
             <h4 class="panel-title extralight">
-                <a href="#">{{ vidgroup }}</a>
+                {{ vidgroup }}
             </h4>
         </div>
         <div id="collapse{{ vidgroup }}" class="panel-collapse collapse in">
@@ -24,8 +25,7 @@
                         <div class="col-sm-4">
                             <a href="#" class="thumbnail" data-toggle="modal"
                                data-target="#{{ vidgroup }}Modal{{ loop.index }}">
-                                <img src="{{ item.art_external_url }}"
-                                     style="width: 100%; max-height: 214px;"
+                                <img src="{{ item.art_external_url }}&thumbnail=1"
                                      id="{{ vidgroup }}-cover{{ loop.index }}"/>
                             </a>
                         </div>
@@ -40,7 +40,7 @@
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-body">
-                                        <img src="{{ item.art_external_url }}"
+                                        <img src="{{ item.art_external_url }}&local=1"
                                              style="width: 100%;"
                                              class="img-rounded"/>
                                     </div>
@@ -54,7 +54,7 @@
                                                 <dt class="regular">Release
                                                                     Date
                                                 </dt>
-                                                <dd class="light">{{ item.releasedate[1] }}/{{ item.releasedate[2] }}/{{ item.releasedate[0] }}</dd>
+                                                <dd class="light">{{ item.releasedate }}</dd>
                                                 <dt class="regular">Rating</dt>
                                                 <dd class="light">{{ item.rating|round(1, 'common') }}</dd>
                                                 <dt class="regular">Added</dt>
@@ -65,7 +65,7 @@
                                                 <dt class="regular">Season</dt>
                                                 <dd class="light">{{ item.season }}</dd>
                                                 <dt class="regular">Episode</dt>
-                                                <dd class="light">{{ item.episode_number }}</dd>
+                                                <dd class="light">{{ '{0:02d}'.format(item.episode_number) }}</dd>
                                                 <dt class="regular">Title</dt>
                                                 <dd class="light">{{ item.title }}</dd>
                                                 <dt class="regular">Summary</dt>
@@ -104,10 +104,11 @@
 
     <!-- Begin Music Section -->
     <div class="panel panel-default">
-        <div class="panel-heading" data-toggle="collapse"
+        <div class="panel-heading" {% if values.plex_nowplaying == 'null' %}
+             data-toggle="collapse" {% endif %}
              data-parent="#accordion" data-target="#collapseTwo">
             <h4 class="panel-title extralight">
-                <a href="#">Music</a>
+                Music
             </h4>
         </div>
         <div id="collapseTwo" class="panel-collapse collapse in">
