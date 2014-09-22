@@ -136,7 +136,8 @@ a.btn_mod {
 }
 
 .extra-bottom {
-    margin-bottom: 15px;
+    margin-bottom: 0;
+    margin-top: 0;
 }
 
 .very-top {
