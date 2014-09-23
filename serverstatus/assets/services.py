@@ -27,12 +27,11 @@ class Service(object):
             '{} class initialized'.format(self.__class__.__name__))
         self.server_info = service_info
         self.SERVICES_STATUS_MAPPING = self._get_status_mappings_dict()
-        self.image_dir = ''.join([app.config.get('TEMP_LOCATION', 'img/tmp')
-                                  + 'flask-images'])
         self.service_name = None
         self.connect_status = None
         self.server_full_url = None
         self.resolved_status_mapping = dict()
+        self._temp_img_dir = app.config.get('TEMP_IMAGES', '/tmp')
 
     @property
     def get_status_mapping(self):
@@ -139,7 +138,8 @@ class Service(object):
         # Log warning that config value for plex is missing from config file.
         # Using default value instead
         self.logger.warning(
-            '{config_val} missing from config value for {cls_name}.  Using {default} instead'.
+            ('{config_val} missing from config value for {cls_name}. '
+             'Using {default} instead').
             format(cls_name=cls_name, default=default, config_val=config_val))
 
     @staticmethod
@@ -155,7 +155,7 @@ class Service(object):
         """
         if subpath is None:
             subpath = ''
-        dir_short = os.path.join(self.image_dir, subpath)
+        dir_short = os.path.join(self._temp_img_dir, subpath)
         abs_path = os.path.join(app.config['APPLOCATION'], dir_short)
         if not os.path.isdir(abs_path):
             self.logger.info(
@@ -211,8 +211,8 @@ class SubSonic(Service):
                     num_results=num_of_results)
                 recently_added_count = len(entries['recently_added'])
                 show_recently_added = recently_added_count - now_playing_count
-                entries['recently_added'] = entries['recently_added'][
-                                            :show_recently_added]
+                entries['recently_added'] = \
+                    entries['recently_added'][:show_recently_added]
         return entries
 
     def get_recently_added(self, num_results=None):
@@ -230,6 +230,7 @@ class SubSonic(Service):
             for entry in recently_added:
                 yield entry
             return
+
         if num_results is None:
             num_results = 10
         return [self._get_entry_info(entry) for entry in
@@ -246,8 +247,8 @@ class SubSonic(Service):
             return self.conn.getCoverArt(aid=cover_art_id, size=size)
 
     def set_output_directory(self, directory):
-        self.image_dir = directory
-        return self.image_dir == directory
+        self._temp_img_dir = directory
+        return self._temp_img_dir == directory
 
     def _test_server_connection(self):
         """
@@ -278,7 +279,7 @@ class SubSonic(Service):
         if size is None:
             size = 600
         img_data = self.conn.getCoverArt(aid=cover_art_id, size=size)
-        cover_dir = '/tmp/flask-images'  # temp storage for created image files
+        cover_dir = self._temp_img_dir  # temp storage for created image files
         filename = 'cover'
         ext = '.jpg'
         short_filepath = filename + str(cover_art_id) + '_' + str(size) + ext
@@ -438,6 +439,19 @@ class Plex(Service):
         self._img_base_url = self._build_external_img_path(self.service_name)
 
     def get_recently_added(self, num_results=None):
+        """
+
+        :type num_results: int or unknown
+        :return: dict of [lists]
+        """
+
+        def process_video_data(videos):
+            # sort the recently added list by date in descending order
+            videos = sorted(videos, key=itemgetter('@addedAt'), reverse=True)
+            # trim the list to the number of results we want
+            videos_trimmed = videos[:num_results]
+            return [self._get_video_data(video) for video in videos_trimmed]
+
         if not self.connect_status:
             return None
         if any([num_results is None, type(num_results) is not int]):
@@ -460,18 +474,8 @@ class Plex(Service):
                     media['@type'] == 'season']
         # remove extra data
         del json_data
-        # sort the recently added list by date in descending order
-        movies = sorted(movies, key=itemgetter('@addedAt'),
-                        reverse=True)
-        tv_shows = sorted(tv_shows, key=itemgetter('@addedAt'),
-                          reverse=True)
-        # trim the list to the number of results we want
-        movies_trimmed = movies[:num_results]
-        tv_shows_trimmed = tv_shows[:num_results]
-        return dict(Movies=[self._get_video_data(video) for video in
-                            movies_trimmed],
-                    TVShows=[self._get_video_data(video) for video in
-                             tv_shows_trimmed])
+        return dict(Movies=process_video_data(movies),
+                    TVShows=process_video_data(tv_shows))
 
     def get_now_playing(self):
         """
@@ -540,19 +544,21 @@ class Plex(Service):
         :return: binary
         :raises: exceptions.PlexImageError
         """
-        thumbnail = not thumbnail is None
-        local = not local is None
+        thumbnail = thumbnail is not None
+        local = local is not None
         if self._cover_mapping is None:
             # if _cover_mapping is empty we need to initialize Now Playing
             self.get_now_playing()
         if thumbnail:
             try:
-                resp = open('/tmp/flask-images/' + plex_id + '.thumbnail', 'rb')
+                resp = open(os.path.join(self._temp_img_dir,
+                                         plex_id + '.thumbnail'), 'rb')
             except IOError as err:
                 raise exceptions.PlexImageError(err)
         elif local:
             try:
-                resp = open('/tmp/flask-images/' + plex_id + '.jpg', 'rb')
+                resp = open(os.path.join(self._temp_img_dir,
+                                         plex_id + '.jpg'), 'rb')
             except IOError as err:
                 raise exceptions.PlexImageError(err)
         else:
@@ -582,8 +588,8 @@ class Plex(Service):
         json_show_data = self._get_xml_convert_to_json('serverinfo')
         server_data = json_show_data.get('MediaContainer', None)
         data_dict = {str(key.strip('@')): server_data[key] for key in
-                     server_data if type(server_data[key]) is unicode or type(
-            server_data[key]) is str}
+                     server_data if type(server_data[key]) is unicode or
+                     type(server_data[key]) is str}
         for key in data_dict:
             try:
                 data_dict[key] = int(data_dict[key])
@@ -759,16 +765,7 @@ class Plex(Service):
         # converts direct plex http link to thumbnail to internal mapping
         # security through obfuscation /s
         self._cover_mapping[arturlmapped_value] = plex_path_to_art
-        try:
-            video_data['rating'] = float(video['@rating'])
-        except KeyError:
-            # log no rating info, set rating to 0
-            self.logger.info('Rating data for {} is not available'.
-                             format(
-                video_data['showtitle'] if vidtype == 'Movies' else ' - '.
-                join([video_data['showtitle'], video_data['season'],
-                      str(video_data['episode_number'])])))
-            video_data['rating'] = 0
+        video_data['rating'] = float(video.get('@rating', 0))
         if get_type == 'nowplaying':
             # only applicable if we want to retrieve now playing data from Plex
             try:
@@ -802,18 +799,19 @@ class Plex(Service):
             else:
                 self.logger.debug('Image file already exists at: {}'.
                                   format(filepath))
+
         # retrieve image data from Plex server metadata
         img_data = StringIO(urllib2.urlopen(
             urlparse.urljoin(self.server_internal_url_and_port,
                              cover_loc)).read())
         # pull temporary image directory location from flask configuration
-        img_dir = app.config.get('TEMP_IMAGES', '/tmp')
+        img_dir = self._temp_img_dir
         # check if temp directory exists, if not attempt to create directory
         if not os.path.exists(img_dir):
             try:
                 os.mkdir(img_dir)
                 self.logger.info('Creating temporary image directory {}'.
-                                  format(img_dir))
+                                 format(img_dir))
             except OSError as err:
                 self.logger.error(('Failure creating temporary image directory'
                                    ' {}.\nError message {}').format(img_dir,
@@ -821,7 +819,7 @@ class Plex(Service):
                 raise
         exts = ('.jpg', '.thumbnail')
         img_filepaths = [''.join([str(cover_loc.split('/')[-1]),
-                                    ext]) for ext in exts]
+                                  ext]) for ext in exts]
         large_art_fp, thumb_art_fp = [os.path.join(img_dir, fp) for fp in
                                       img_filepaths]
         pillow_save_image(large_art_fp, size='large')
