@@ -1,15 +1,22 @@
 # coding=utf-8
 from collections import namedtuple
 from time import localtime, strftime
+import logging
 
 import forecastio
 
 from serverstatus.assets.exceptions import MissingForecastIOKey
 
 
-class ForecastData(object):
+LOGGER = logging.getLogger(__name__)
+
+
+class Forecast(object):
     def __init__(self, weather_config):
         assert type(weather_config) is dict
+        self.logger = LOGGER
+        self.logger.debug(
+            '{} class initialized'.format(self.__class__.__name__))
         self.forcastio_link_url = 'http://forecast.io/#/f/'
         try:
             self.api_key = weather_config['Forecast_io_API_key']
@@ -21,7 +28,7 @@ class ForecastData(object):
         self.units = weather_config.get('units', 'us')
         self.forecast = self._get_forecast_io()
 
-    def getForecastData(self):
+    def get_data(self):
         json = self.forecast.json
         current = json['currently']
         hourly = json['hourly']
@@ -41,11 +48,12 @@ class ForecastData(object):
             output['current_windbearing'] = self._get_wind_bearing_text(current['windBearing'])
         return output
 
-    def reloadData(self):
+    def reload_data(self):
         self.forecast.update()
 
     def _get_forecast_io(self):
-        return forecastio.load_forecast(self.api_key, self.lat, self.lng, units=self.units)
+        return forecastio.load_forecast(self.api_key, self.lat, self.lng,
+                                        units=self.units)
 
     @staticmethod
     def _get_weather_icons(weather_icon):
@@ -95,10 +103,10 @@ class ForecastData(object):
         return namedtuple(typename='bearing_text', field_names=['cardinal', 'abbrev'])._make(bearing_text)
 
     @staticmethod
-    def _convert_time_to_text(t):
-        assert type(t) is int
-        t = strftime('%I:%M %p', localtime(t))
+    def _convert_time_to_text(time_var):
+        assert type(time_var) is int
+        time_var = strftime('%I:%M %p', localtime(time_var))
         # Remove '0' values from time if less than 10hrs or 10mins
-        if t.startswith('0'):
-            t = t[1:]
-        return t
+        if time_var.startswith('0'):
+            time_var = time_var[1:]
+        return time_var

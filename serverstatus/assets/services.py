@@ -6,6 +6,7 @@ from collections import OrderedDict
 from operator import itemgetter
 from time import localtime, strftime
 import datetime
+from cStringIO import StringIO
 
 from PIL import Image, ImageOps
 import libsonic
@@ -781,59 +782,50 @@ class Plex(Service):
         return video_data
 
     def _save_cover_art(self, cover_loc):
+        def pillow_save_image(filepath, size):
+            size_map = dict(large=(568, 852),
+                            thumb=(144, 214))
+            if not os.path.exists(filepath):
+                # create plex cover art file if file does not exist
+                try:
+                    size = size_map[size]
+                    im = Image.open(img_data)
+                    im = ImageOps.fit(image=im, size=size,
+                                      method=Image.ANTIALIAS)
+                    im.save(filepath, "JPEG")
+                    self.logger.info(
+                        'Write image file: {}'.format(filepath))
+                except IOError as pil_err:
+                    self.logger.error(
+                        'Image file write failure at {}.  Reason: {}'.
+                        format(filepath, pil_err))
+            else:
+                self.logger.debug('Image file already exists at: {}'.
+                                  format(filepath))
         # retrieve image data from Plex server metadata
-        img_data = urllib2.urlopen(
-            urlparse.urljoin(self.server_internal_url_and_port, cover_loc))
+        img_data = StringIO(urllib2.urlopen(
+            urlparse.urljoin(self.server_internal_url_and_port,
+                             cover_loc)).read())
         # pull temporary image directory location from flask configuration
         img_dir = app.config.get('TEMP_IMAGES', '/tmp')
-        # check if temp directory exists, if not attemp to create directory
+        # check if temp directory exists, if not attempt to create directory
         if not os.path.exists(img_dir):
             try:
                 os.mkdir(img_dir)
-                self.logger.debug('Creating temporary image directory {}'.
+                self.logger.info('Creating temporary image directory {}'.
                                   format(img_dir))
             except OSError as err:
                 self.logger.error(('Failure creating temporary image directory'
                                    ' {}.\nError message {}').format(img_dir,
                                                                     err))
                 raise
-        exts = ['.jpg', '.thumbnail']
-        short_filepaths = [''.join([str(cover_loc.split('/')[-1]),
+        exts = ('.jpg', '.thumbnail')
+        img_filepaths = [''.join([str(cover_loc.split('/')[-1]),
                                     ext]) for ext in exts]
         large_art_fp, thumb_art_fp = [os.path.join(img_dir, fp) for fp in
-                                      short_filepaths]
-        if not os.path.exists(large_art_fp):
-            # create plex cover art file if file does not exist
-            try:
-                # (568, 852)
-                with open(large_art_fp, 'wb') as img_file:
-                    img_file.write(img_data.read())
-                    img_data.close()
-                self.logger.info(
-                    'Write cover art file: {}'.format(large_art_fp))
-            except IOError:
-                self.logger.error('Cover art file write failure: {}'.
-                                  format(large_art_fp))
-        else:
-            self.logger.debug('Cover art already exists at: {}'.
-                              format(large_art_fp))
-        if not os.path.exists(thumb_art_fp):
-            # create plex cover thumbnail file if file does not exist
-            # try:
-            size = (144, 214)
-            im = Image.open(large_art_fp)
-            # im.resize(size, Image.NEAREST)
-            im = ImageOps.fit(image=im, size=size,
-                              method=Image.ANTIALIAS)
-            im.save(thumb_art_fp, "PNG")
-            self.logger.info('Write thumbnail file: {}'.
-                             format(thumb_art_fp))
-            #except IOError as err:
-            #    self.logger.error('Cannot create thumbnail for {}. Reason: {}'.
-            #                      format(thumb_art_fp, err))
-        else:
-            self.logger.debug('Thumbnail art already exists at: {}'.
-                              format(thumb_art_fp))
+                                      img_filepaths]
+        pillow_save_image(large_art_fp, size='large')
+        pillow_save_image(thumb_art_fp, size='thumb')
         return large_art_fp
 
     def _get_tv_show_data(self, video, get_type=None):

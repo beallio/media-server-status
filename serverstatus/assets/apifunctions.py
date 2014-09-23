@@ -1,7 +1,7 @@
 from collections import OrderedDict
 import logging
 
-from serverstatus.assets.weather import ForecastData
+from serverstatus.assets.weather import Forecast
 from serverstatus.assets.services import CheckCrashPlan, ServerSync, Plex, \
     SubSonic
 from serverstatus.assets.sysinfo import GetSystemInfo, get_network_speed, \
@@ -75,7 +75,7 @@ class APIFunctions(object):
     @wrappers.logger('debug')
     def forecast(self):
         self._load_configs()
-        return self.weather.getForecastData()
+        return self.weather.get_data()
 
     @wrappers.logger('debug')
     def plex_transcodes(self):
@@ -114,7 +114,7 @@ class APIFunctions(object):
                 LOGGER.debug('CrashPlan not loaded yet')
         if self.weather is None:
             try:
-                self.weather = ForecastData(self.config['WEATHER'])
+                self.weather = Forecast(self.config['WEATHER'])
             except KeyError:
                 LOGGER.debug('weather not loaded yet')
 

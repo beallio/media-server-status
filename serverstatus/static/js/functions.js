@@ -1,5 +1,5 @@
-var api_base_url = $SCRIPT_ROOT + "/api/";
-var html_base_url = $SCRIPT_ROOT + "/html/";
+var api_base_url = window.location.href + "api/";
+var html_base_url = window.location.href + "html/";
 
 // Auto refresh elements
 (function ($) {
