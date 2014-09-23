@@ -4,25 +4,29 @@
 
 body {
     text-align: center;
-    }
-    .center {
-        margin-left:auto;
-        margin-right:auto;
-    }
-    .no-link-color
-        a {
-            color:#999999;
-        }
-        a:hover {
-            color:#999999;
-        }
+}
 
-    .extralight {
-        font-family: "extralight", sans-serif;
-        }
-    .light {
-        font-family: "light", sans-serif;
-    }
+.center {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.no-link-color
+a {
+    color: #999999;
+}
+
+a:hover {
+    color: #999999;
+}
+
+.extralight {
+    font-family: "extralight", sans-serif;
+}
+
+.light {
+    font-family: "light", sans-serif;
+}
 
 .regular {
     font-family: "regular", sans-serif;
@@ -58,30 +62,34 @@ End of carousel slide transition hack */
 
 /* Disables shadowing on right and left sides of carousel images for a crisp look */
 .carousel-control.left {
-background-image: none;
+    background-image: none;
 }
+
 .carousel-control.right {
-background-image: none;
+    background-image: none;
 }
+
 /* End of carousel shadow modification */
 
 /* Now Playing Progress Bar CSS */
 .now-playing-progress-bar {
-height: 5px;
+    height: 5px;
     margin-top: 0;
     margin-bottom: 0;
     -webkit-border-radius: 0;
     -moz-border-radius: 0;
     border-radius: 0;
 }
+
 /* End of Now Playing Progress Bar CSS */
 
 .panel-white-bg {
-background-color: #ffffff;
+    background-color: #ffffff;
 }
 
 .wan_ping {
-    margin-top:-5px; margin-bottom: 20px;
+    margin-top: -5px;
+    margin-bottom: 20px;
 }
 
 .get_server_info {
@@ -94,7 +102,7 @@ tr.spaceUnder > td {
 
 td.services_btns {
     text-align: right;
-    padding-right:5px;
+    padding-right: 5px;
 }
 
 td.btn_mod {
@@ -102,17 +110,17 @@ td.btn_mod {
 }
 
 a.btn_mod {
-    width:80px;
+    width: 80px;
 }
 
 .hr_break {
     margin-top: 0;
-    margin-bottom:15px;
+    margin-bottom: 15px;
 }
 
 .weather-bottom {
 
-    margin-top:-20px
+    margin-top: -20px
 }
 
 .weather-bottom h5 {

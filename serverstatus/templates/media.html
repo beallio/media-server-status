@@ -1,8 +1,5 @@
 {% if values.now_playing %}
     {% include "now_playing.html" ignore missing with context %}
-{% elif values.subsonic_recentlyadded %}
-
-
-    <!-- End Div Collapse-->
+{% elif values.subsonic_recentlyadded or values.plex_recentlyadded %}
     {% include "recently_added.html" ignore missing with context %}
 {% endif %}

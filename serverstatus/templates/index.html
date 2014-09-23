@@ -33,55 +33,71 @@
                 <!-- Left sidebar -->
                 <div class="col-md-3">
                     <!-- Weather -->
-                    <div class="panel panel-default" id="panel-weather">
-                        <div class="panel-heading" data-toggle="collapse"
-                             data-parent="#panel-weather"
-                             data-target="#panel-body-weather">
-                            <h4 class="panel-title extralight">
-                                Weather
-                            </h4>
-                        </div>
-                        <div class="panel-collapse collapse in weather"
-                             id="panel-body-weather">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="panel panel-default" id="panel-weather">
+                                <div class="panel-heading"
+                                     data-toggle="collapse"
+                                     data-parent="#panel-weather"
+                                     data-target="#panel-body-weather">
+                                    <h4 class="panel-title extralight">
+                                        Weather
+                                    </h4>
+                                </div>
+                                <div class="panel-collapse collapse in weather"
+                                     id="panel-body-weather">
 
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <!-- Bandwidth -->
-                    <div class="panel panel-default" id="panel-bandwidth">
-                        <div class="panel-heading" data-toggle="collapse"
-                             data-parent="#panel-bandwidth"
-                             data-target="#panel-body-bandwidth">
-                            <h4 class="panel-title extralight">
-                                Bandwidth
-                            </h4>
-                        </div>
-                        <div class="panel-collapse collapse in"
-                             id="panel-body-bandwidth">
-                            <div class="panel-body">
-                                {% include "bandwidth.html" %}
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="panel panel-default"
+                                 id="panel-bandwidth">
+                                <div class="panel-heading"
+                                     data-toggle="collapse"
+                                     data-parent="#panel-bandwidth"
+                                     data-target="#panel-body-bandwidth">
+                                    <h4 class="panel-title extralight">
+                                        Bandwidth
+                                    </h4>
+                                </div>
+                                <div class="panel-collapse collapse in"
+                                     id="panel-body-bandwidth">
+                                    <div class="panel-body">
+                                        {% include "bandwidth.html" %}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <!-- Services -->
-                    <div class="panel panel-default" id="panel-services">
-                        <div class="panel-heading" data-toggle="collapse"
-                             data-parent="#panel-services"
-                             data-target="#panel-body-services">
-                            <h4 class="panel-title extralight">
-                                Services
-                            </h4>
-                        </div>
-                        <div class="panel-collapse collapse in"
-                             id="panel-body-services">
-                            <div class="services" id="services">
-
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="panel panel-default"
+                                 id="panel-services">
+                                <div class="panel-heading"
+                                     data-toggle="collapse"
+                                     data-parent="#panel-services"
+                                     data-target="#panel-body-services">
+                                    <h4 class="panel-title extralight">
+                                        Services
+                                    </h4>
+                                </div>
+                                <div class="panel-collapse collapse in"
+                                     id="panel-body-services">
+                                    <div class="services" id="services"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 <!-- Center Area -->
                 <div class="col-md-6">
-                    <div class="media"></div>
+                    <div class="media">
+                    </div>
                 </div>
                 <!-- Right sidebar -->
                 <div class="col-md-3">

@@ -4,12 +4,9 @@ import logging
 import logging.handlers as handlers
 
 from flask import Flask
-from flask_images import Images
 
 
 app = Flask(__name__)
-app.secret_key = 'Monkey'
-images = Images(app)
 
 app.config.update(
     APPNAME='server_status',

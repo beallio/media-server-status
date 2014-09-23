@@ -198,7 +198,7 @@ class SubSonic(Service):
         if not self.connect_status:
             return
         try:
-            entries['now_playing'] = self._get_now_playing()
+            entries['now_playing'] = self.get_now_playing()
             now_playing_count = len(entries['now_playing'])
             if now_playing_count > num_of_results:
                 entries['now_playing'] = entries['now_playing'][:num_of_results]
@@ -215,11 +215,24 @@ class SubSonic(Service):
         return entries
 
     def get_recently_added(self, num_results=None):
+        """
+        Returns recently added entries.
+
+        :param num_results: number of recently added results to return
+        :type num_results: int
+        :return: list of [dict]
+        """
+
+        def recently_added_generator(num):
+            recently_added = self.conn.getAlbumList("newest", num)['albumList'][
+                'album']
+            for entry in recently_added:
+                yield entry
+            return
         if num_results is None:
-            num_results = 9
-        recently_added = self.conn.getAlbumList("newest", num_results)
-        recently_added = recently_added['albumList']['album']
-        return [self._get_entry_info(entry) for entry in recently_added]
+            num_results = 10
+        return [self._get_entry_info(entry) for entry in
+                recently_added_generator(num_results)]
 
     def get_cover_art(self, cover_art_id, size=None):
         assert type(cover_art_id) is int
@@ -236,12 +249,20 @@ class SubSonic(Service):
         return self.image_dir == directory
 
     def _test_server_connection(self):
+        """
+        Test if we're able to connect to Subsonic server.
+
+        :return: bool - True if able to connect, false otherwise
+        :raise: exceptions.SubsonicConnectionError
+        """
         connection_status = False
         try:
             connection_status = self.conn.ping()
             assert connection_status
         except AssertionError:
-            self.logger.error("Unable to reach Subsonic server")
+            err = 'Unable to reach Subsonic server'
+            self.logger.error()
+            raise exceptions.SubsonicConnectionError(err)
         finally:
             return connection_status
 
@@ -276,17 +297,25 @@ class SubSonic(Service):
                 img_file.write(img_data.read())
         return full_filepath
 
-    def _get_entry_info(self, entry):
+    def _get_entry_info(self, entry, min_size=None, max_size=None):
         """
         appends URL coverart link to Subsonic entry dict
-        :param entry: subsonic entry dict
-        :return: entry
+        :param entry: subsonic entry
+        :type entry: dict
+        :return: dict
         """
         assert type(entry) == dict
-        entry['coverArtExternalLink_sm'] = ''.join(
-            [self._img_base_url, str(entry['coverArt']), '&size=145'])
-        entry['coverArtExternalLink_xl'] = ''.join(
-            [self._img_base_url, str(entry['coverArt']), '&size=500'])
+        if min_size:
+            min_size = 145
+        if min_size:
+            min_size = 500
+        # create url link to thumbnail coverart, and full-size coverart
+        entry.update(coverArtExternalLink_sm=''.join(
+            [self._img_base_url, str(entry['coverArt']), '&size=',
+             str(min_size)]),
+                     coverArtExternalLink_xl=''.join(
+                         [self._img_base_url, str(entry['coverArt']), '&size=',
+                          str(max_size)]))
         created_date = datetime.datetime.strptime(entry[u'created'],
                                                   '%Y-%m-%dT%H:%M:%S')
         entry[u'created'] = created_date.strftime('%m/%d/%Y %I:%M%p')
@@ -304,15 +333,23 @@ class SubSonic(Service):
                          progress_whole=entry['progress'] * 100)
         return entry
 
-    def _get_now_playing(self):
+    def get_now_playing(self):
+        """
+        Returns now playing entries from Subsonic server in list format.  Each
+        entry in list represents one song currently playing from server.  Each
+        entry in list is a dict
+
+        :returns: list of [dict]
+        """
         entries = []
         nowplaying = self.conn.getNowPlaying()
-        if type(nowplaying['nowPlaying'][
-            'entry']) == list:  # multiple songs playing
+        # multiple songs playing
+        how_many_playing = type(nowplaying['nowPlaying']['entry'])
+        if how_many_playing == list:
             entries = [self._get_entry_info(entry) for entry in
                        nowplaying['nowPlaying']['entry']]
-        elif type(nowplaying['nowPlaying'][
-            'entry']) == dict:  # single song playing
+        # single song playing
+        elif how_many_playing == dict:
             entries.append(
                 self._get_entry_info(nowplaying['nowPlaying']['entry']))
         # remove entries from now playing if user hasn't touched them or
@@ -768,35 +805,35 @@ class Plex(Service):
         if not os.path.exists(large_art_fp):
             # create plex cover art file if file does not exist
             try:
+                # (568, 852)
                 with open(large_art_fp, 'wb') as img_file:
                     img_file.write(img_data.read())
+                    img_data.close()
                 self.logger.info(
                     'Write cover art file: {}'.format(large_art_fp))
             except IOError:
                 self.logger.error('Cover art file write failure: {}'.
                                   format(large_art_fp))
-            else:
-                if not os.path.exists(thumb_art_fp):
-                    # create plex cover thumbnail file if file does not exist
-                    try:
-                        size = (144, 214)
-                        im = Image.open(large_art_fp)
-                        # im.resize(size, Image.NEAREST)
-                        im = ImageOps.fit(image=im, size=size,
-                                          method=Image.ANTIALIAS)
-                        im.save(thumb_art_fp, "JPEG")
-                        self.logger.info('Write thumbnail file: {}'.
-                                         format(thumb_art_fp))
-                    except IOError:
-                        self.logger.error('Cannot create thumbnail for : {}'.
-                                          format(thumb_art_fp))
-                else:
-                    self.logger.debug('Thumbnail art already exists at: {}'.
-                                      format(thumb_art_fp))
         else:
             self.logger.debug('Cover art already exists at: {}'.
                               format(large_art_fp))
-        img_data.close()
+        if not os.path.exists(thumb_art_fp):
+            # create plex cover thumbnail file if file does not exist
+            # try:
+            size = (144, 214)
+            im = Image.open(large_art_fp)
+            # im.resize(size, Image.NEAREST)
+            im = ImageOps.fit(image=im, size=size,
+                              method=Image.ANTIALIAS)
+            im.save(thumb_art_fp, "PNG")
+            self.logger.info('Write thumbnail file: {}'.
+                             format(thumb_art_fp))
+            #except IOError as err:
+            #    self.logger.error('Cannot create thumbnail for {}. Reason: {}'.
+            #                      format(thumb_art_fp, err))
+        else:
+            self.logger.debug('Thumbnail art already exists at: {}'.
+                              format(thumb_art_fp))
         return large_art_fp
 
     def _get_tv_show_data(self, video, get_type=None):
@@ -813,7 +850,7 @@ class Plex(Service):
                                                            video['@key'].
                                                            lstrip('/'))
             vid = json_show_data['MediaContainer']
-            video_data.update(rating=vid['@grandparentContentRating'],
+            video_data.update(rating=vid.get('@grandparentContentRating', ''),
                               studio=vid['@grandparentStudio'])
             try:
                 # if there's more than one episode in the season

@@ -24,3 +24,7 @@ class PlexAPIDataError(Exception):
 
 class PlexImageError(Exception):
     pass
+
+
+class SubsonicConnectionError(Exception):
+    pass
