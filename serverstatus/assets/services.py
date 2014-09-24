@@ -26,7 +26,7 @@ class Service(object):
         self.logger.debug(
             '{} class initialized'.format(self.__class__.__name__))
         self.server_info = service_info
-        self._services_status_mapping = self._get_status_mappings_dict()
+        self._services_status_mapping = self._status_mappings_dict()
         self._service_name = None
         self._connect_status = None
         self._server_full_url = None
@@ -38,33 +38,33 @@ class Service(object):
         return self._service_name
 
     @property
-    def get_status_mapping(self):
-        self._resolved_status_mapping = self._get_status_mapping()
+    def status_mapping(self):
+        self._resolved_status_mapping = self._map_connection_status()
         return self._resolved_status_mapping
 
     @property
-    def get_connection_status(self):
+    def connection_status(self):
         self._connect_status = self._test_server_connection()
         return self._connect_status
 
     @property
-    def get_server_full_url(self):
+    def server_full_url(self):
         return self._server_full_url
 
     @property
-    def get_external_url(self):
+    def external_url(self):
         return self._get_config_attrib('external_url')
 
     @staticmethod
-    def convert_date(dt_obj, in_format, out_format):
-        dt_value = datetime.datetime.strptime(dt_obj, in_format)
-        return dt_value.strftime(out_format)
+    def convert_date_fmt(date_str, fmt_str_in, fmt_str_out):
+        dt_value = datetime.datetime.strptime(date_str, fmt_str_in)
+        return dt_value.strftime(fmt_str_out)
 
     def _test_server_connection(self):
         # method to be overridden by subclasses
         return
 
-    def _get_status_mapping(self):
+    def _map_connection_status(self):
         service_name = self._service_name
         output = {service_name: dict()}
         try:
@@ -72,8 +72,8 @@ class Service(object):
                 str(self._connect_status)]}
             output[service_name][
                 'title'] = self._add_service_name_to_status_mapping()
-            if self.get_external_url:
-                output[service_name]['external_url'] = self.get_external_url
+            if self.external_url:
+                output[service_name]['external_url'] = self.external_url
         except KeyError:
             pass
         return output
@@ -96,7 +96,7 @@ class Service(object):
             return None
 
     @staticmethod
-    def _get_status_mappings_dict():
+    def _status_mappings_dict():
         return dict(
             False=dict(
                 text='Offline',
@@ -155,35 +155,6 @@ class Service(object):
         finally:
             return output
 
-    """
-    @staticmethod
-    def _strip_base_path(filepath):
-        return filepath.replace(app.config['APP_MODULESLOCATION'], '').lstrip(
-            '/')
-
-
-    def _get_img_directory(self, subpath=None):
-        #Creates absolutely directory path for temp images
-
-        #:param subpath:
-        #:return: string
-        if subpath is None:
-            subpath = ''
-        dir_short = os.path.join(self._temp_img_dir, subpath)
-        abs_path = os.path.join(app.config['APPLOCATION'], dir_short)
-        if not os.path.isdir(abs_path):
-            self.logger.info(
-                'Directory not found. Creating directory: {}'.format(abs_path))
-            try:
-                os.makedirs(abs_path)
-            except IOError as e:
-                self.logger.error(e)
-                raise IOError
-        return abs_path
-
-
-    """
-
 
 class SubSonic(Service):
     def __init__(self, server_info):
@@ -199,7 +170,7 @@ class SubSonic(Service):
                                             'serverpath'])
         self._connect_status = self._test_server_connection()
         self._server_full_url = self._get_server_full_url()
-        self._resolved_status_mapping = self._get_status_mapping()
+        self._resolved_status_mapping = self._map_connection_status()
         self._img_base_url = self._build_external_img_path(
             self._service_name) + 'cover='
 
@@ -244,7 +215,11 @@ class SubSonic(Service):
         """
         entries = []
         nowplaying = self.conn.getNowPlaying()
-        many_songs_playing = type(nowplaying['nowPlaying']['entry']) == list
+        try:
+            many_songs_playing = type(nowplaying['nowPlaying']['entry']) == list
+        except TypeError:
+            # no songs playing
+            return None
         if many_songs_playing:
             # multiple songs playing
             entries = [self._get_entry_info(entry) for entry in
@@ -331,7 +306,7 @@ class SubSonic(Service):
         entry.update(coverArtExternalLink_sm=cover_art_link[0],
                      coverArtExternalLink_xl=cover_art_link[1])
         try:
-            created_date = self.convert_date(entry[u'created'],
+            created_date = self.convert_date_fmt(entry[u'created'],
                                              '%Y-%m-%dT%H:%M:%S',
                                          '%m/%d/%Y %I:%M%p')
         except ValueError as dt_conv_err:
@@ -365,7 +340,7 @@ class CheckCrashPlan(Service):
         self._service_name = 'backups'
         self.file_path = self._test_file_path('logfile_path')
         self._connect_status = self._test_server_connection()
-        self._resolved_status_mapping = self._get_status_mapping()
+        self._resolved_status_mapping = self._map_connection_status()
 
     def _test_server_connection(self):
         items_to_keep = ['scanning', 'backupenabled']
@@ -391,7 +366,7 @@ class ServerSync(Service):
         self.lockfile_path = self.server_info['lockfile_path']
         self._service_name = 'server-sync'
         self._connect_status = self._test_server_connection()
-        self._resolved_status_mapping = self._get_status_mapping()
+        self._resolved_status_mapping = self._map_connection_status()
 
     def _test_server_connection(self):
         try:
@@ -426,7 +401,7 @@ class Plex(Service):
                     cls=self.__class__.__name__))
             raise exceptions.MissingConfigValue(err)
         self._connect_status = self._test_server_connection()
-        self._resolved_status_mapping = self._get_status_mapping()
+        self._resolved_status_mapping = self._map_connection_status()
         self._transcodes = 0
         self._cover_mapping = dict()
         self._img_base_url = self._build_external_img_path(self._service_name)
@@ -573,11 +548,11 @@ class Plex(Service):
 
         :return: int
         """
-        server_info = self.get_plex_server_info()
+        server_info = self.plex_server_info()
         self._transcodes = server_info.get('transcoderActiveVideoSessions', 0)
         return self._transcodes
 
-    def get_plex_server_info(self):
+    def plex_server_info(self):
         json_show_data = self._get_xml_convert_to_json('serverinfo')
         server_data = json_show_data.get('MediaContainer', None)
         data_dict = {str(key.strip('@')): server_data[key] for key in
@@ -613,7 +588,7 @@ class Plex(Service):
             self.logger.error('Could not connect to Plex server')
         return is_connectable
 
-    def _get_api_url_suffix(self, the_data_were_looking_for):
+    def _get_api_url_suffix(self, url_suffix):
         """
         https://code.google.com/p/plex-api/wiki/PlexWebAPIOverview
         contains information required Plex HTTP APIs
@@ -649,7 +624,7 @@ class Plex(Service):
             metadata='/library/metadata/'
         )
         try:
-            results = url_api_mapping[the_data_were_looking_for]
+            results = url_api_mapping[url_suffix]
         except KeyError as err:
             self.logger.error(err)
             raise exceptions.PlexAPIKeyNotFound(err)
@@ -665,8 +640,9 @@ class Plex(Service):
 
         :return: str
         """
-        port = str(self.server_info.get('internal_port', 32400))
-        if port != self.server_info.get('internal_port'):
+        port = str(self.server_info.get('internal_port', '32400'))
+        if port != self.server_info.get('internal_port') or str(port) != \
+                self.server_info.get('internal_port'):
             self._log_warning_for_missing_config_value(
                 cls_name=self.__class__.__name__, default=port,
                 config_val='port')
@@ -737,7 +713,7 @@ class Plex(Service):
             release_date = video['@originallyAvailableAt']
             video_data = dict(showtitle=video['@title'],
                               summary=video['@summary'],
-                              releasedate=self.convert_date(release_date,
+                              releasedate=self.convert_date_fmt(release_date,
                                                             '%Y-%m-%d',
                                                             '%m/%d/%Y'))
         else:
@@ -846,7 +822,7 @@ class Plex(Service):
             # get originally date playing on TV
             aired_date = vid_we_want['@originallyAvailableAt']
             video_data.update(title=vid_we_want['@title'],
-                              aired_date=self.convert_date(aired_date,
+                              aired_date=self.convert_date_fmt(aired_date,
                                                            "%Y-%m-%d",
                                                            "%m/%d/%Y"))
 
