@@ -203,30 +203,6 @@ class SubSonic(Service):
         self._img_base_url = self._build_external_img_path(
             self._service_name) + 'cover='
 
-    def getNowPlayingOrRecentlyAdded(self, num_of_results=None):
-        if num_of_results is None:
-            num_of_results = 9
-        entries = {}
-        now_playing_count = 0
-        if not self._connect_status:
-            return
-        try:
-            entries['now_playing'] = self.now_playing()
-            now_playing_count = len(entries['now_playing'])
-            if now_playing_count > num_of_results:
-                entries['now_playing'] = entries['now_playing'][:num_of_results]
-        except TypeError:
-            pass
-        finally:
-            if now_playing_count < num_of_results:
-                entries['recently_added'] = self.recently_added(
-                    num_results=num_of_results)
-                recently_added_count = len(entries['recently_added'])
-                show_recently_added = recently_added_count - now_playing_count
-                entries['recently_added'] = \
-                    entries['recently_added'][:show_recently_added]
-        return entries
-
     def recently_added(self, num_results=None):
         """
         Returns recently added entries.
@@ -239,14 +215,14 @@ class SubSonic(Service):
         def recently_added_generator(num):
             recently_added = self.conn.getAlbumList("newest", num)['albumList'][
                 'album']
-            for entry in recently_added:
-                yield entry
+            for album in recently_added:
+                yield album
             return
 
         if num_results is None:
             num_results = 10
-        return [self._get_entry_info(entry) for entry in
-                recently_added_generator(num_results)]
+        return [self._get_entry_info(entry, min_size=145, max_size=500) for
+                entry in recently_added_generator(num_results)]
 
     def get_cover_art(self, cover_art_id, size=None):
         assert type(cover_art_id) is int
@@ -268,19 +244,19 @@ class SubSonic(Service):
         """
         entries = []
         nowplaying = self.conn.getNowPlaying()
-        # multiple songs playing
-        how_many_playing = type(nowplaying['nowPlaying']['entry'])
-        if how_many_playing == list:
+        many_songs_playing = type(nowplaying['nowPlaying']['entry']) == list
+        if many_songs_playing:
+            # multiple songs playing
             entries = [self._get_entry_info(entry) for entry in
                        nowplaying['nowPlaying']['entry']]
-        # single song playing
-        elif how_many_playing == dict:
+        elif not many_songs_playing:
+            # single song playing
             entries.append(
                 self._get_entry_info(nowplaying['nowPlaying']['entry']))
         # remove entries from now playing if user hasn't touched them or
         # playlist auto advanced in X min
-        entries = [entry for entry in entries if entry['minutesAgo'] <= 10]
-        return entries
+        return [self._get_entry_info(entry, max_size=800) for entry in entries
+                if entry['minutesAgo'] <= 10]
 
     def set_output_directory(self, directory):
         # //TODO remove extraneous code
@@ -347,16 +323,21 @@ class SubSonic(Service):
         if min_size:
             min_size = 145
         if max_size:
-            max_size = 500
+            max_size = 1200
         # create url link to thumbnail coverart, and full-size coverart
         cover_art_link = [''.join([self._img_base_url, str(entry['coverArt']),
                                    '&size=', str(size)]) for size in
                           (min_size, max_size)]
         entry.update(coverArtExternalLink_sm=cover_art_link[0],
                      coverArtExternalLink_xl=cover_art_link[1])
-        created_date = self.convert_date(entry[u'created'], '%Y-%m-%dT%H:%M:%S',
+        try:
+            created_date = self.convert_date(entry[u'created'],
+                                             '%Y-%m-%dT%H:%M:%S',
                                          '%m/%d/%Y %I:%M%p')
-        entry[u'created'] = created_date
+        except ValueError as dt_conv_err:
+            self.logger.error('Error converting date: {}'.format(dt_conv_err))
+        else:
+            entry[u'created'] = created_date
         try:
             # Return progress on currently playing song(s).  No good way to do
             # this since Subsonic doesn't have access to this info through
@@ -368,7 +349,7 @@ class SubSonic(Service):
             entry['progress'] = 1
         finally:
             entry.update(progress_pct='{:.2%}'.format(entry['progress']),
-                         progress_whole=entry['progress'] * 100)
+                         progress=entry['progress'] * 100)
         return entry
 
     def _get_server_full_url(self):

@@ -68,6 +68,7 @@ class APIFunctions(object):
         subsonic = self.subsonic
         plex = self.plex
         return dict(
+            subsonic_nowplaying=subsonic.now_playing(),
             plex_nowplaying=plex.now_playing(),
             subsonic_recentlyadded=subsonic.recently_added(num_results=6),
             plex_recentlyadded=plex.recently_added(num_results=6))

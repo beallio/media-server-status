@@ -1,9 +1,10 @@
-{% set isnowplaying = (values.plex_nowplaying == 'null') %}
+{% set isnowplaying = (values.plex_nowplaying != 'null') or (values.subsonic_nowplaying  != 'null') %}
+{% set header_size = 3 if isnowplaying else 1 %}
 <div class="row">
     <div class="col-sm-12">
-        <h3 class="extralight">
-            Recently Added
-        </h3>
+        <h{{ header_size }} class="extralight">
+        Recently Added
+        </h{{ header_size }}>
     </div>
 </div>
 <div class="panel-group" id="accordion">

@@ -1,5 +1,6 @@
-{% if values.now_playing %}
+{% if values.subsonic_nowplaying or values.plex_nowplaying %}
     {% include "now_playing.html" ignore missing with context %}
-{% elif values.subsonic_recentlyadded or values.plex_recentlyadded %}
+{% endif %}
+{% if values.subsonic_recentlyadded or values.plex_recentlyadded %}
     {% include "recently_added.html" ignore missing with context %}
 {% endif %}
