@@ -1,49 +1,61 @@
 <div id="now-playing">
-    <h1 class="extralight">
-        Now Playing
-        <hr>
-    </h1>
-    <div style="overflow: auto; width: 100%; height: 800px; margin: 0 auto">
-    <div class="col-md-12">
+    <h1 class="extralight">Now Playing</h1>
+    <hr>
+    <div style="overflow: auto; width: 100%; margin: 0 auto">
+        <div class="col-md-12">
             <div id="carousel-example-generic" class=" carousel slide">
                 <div class="thumbnail">
                     <!-- Wrapper for slides -->
                     <div class="carousel-inner">
-                        {% for item in values.now_playing %}
-                        {% if loop.first %}
-                        <div class="item active">
-                                <img src="{{item.coverArtLocalLink}}" alt="{{ item.album }}"/>
-                            <div class="progress now-playing-progress-bar">
-                                <div class="progress-bar progress-bar-warning" role="progressbar"
-                                     aria-valuenow="{{ item.progress_whole}}" aria-valuemin="0" aria-valuemax="100"
-                                     style="width: {{ item.progress_pct }}"></div>
-                            </div>
-                            <div class="album_info">
-                                <b class="light">Artist:</b>&nbsp;{{ item.artist }}<br>
-                                <b class="light">Track:</b>&nbsp;{{ item.track }}. {{ item.title }}<br>
-                                <b class="light">Album:</b>&nbsp;{{ item.album }}<br>
-                                <b class="light">Year:</b>&nbsp;{{item.year}}
-                            </div>
-                        </div>
-                        {% else %}
-                        <div class="item">
-                                <img src="{{item.coverArtLocalLink}}" alt="{{ item.album }}"/>
-                            <div class="progress now-playing-progress-bar">
-                                <div class="progress-bar progress-bar-warning" role="progressbar"
-                                     aria-valuenow="{{ item.progress_whole}}" aria-valuemin="0" aria-valuemax="100"
-                                     style="width: {{ item.progress_pct }}"></div>
-                            </div>
-                        </div>
-                        {% endif %}
+                        {% for item in values.subsonic_nowplaying %}
+                            {% if loop.first %}
+                                <div class="item active">
+                                    <img src="{{ item.coverArtExternalLink_xl }}"
+                                         alt="{{ item.album }}"/>
+
+                                    <div class="progress now-playing-progress-bar">
+                                        <div class="progress-bar progress-bar-warning"
+                                             role="progressbar"
+                                             aria-valuenow="{{ item.progress }}"
+                                             aria-valuemin="0"
+                                             aria-valuemax="100"
+                                             style="width: {{ item.progress }}%"></div>
+                                    </div>
+                                    <div class="album_info"
+                                         style="padding-top: 5px">
+                                        <b class="light">Artist:</b>&nbsp;{{ item.artist }}
+                                        <br>
+                                        <b class="light">Track:</b>&nbsp;{{ item.track }}. {{ item.title }}
+                                        <br>
+                                        <b class="light">Album:</b>&nbsp;{{ item.album }}
+                                        <br>
+                                        <b class="light">Year:</b>&nbsp;{{ item.year }}
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="item">
+                                    <img src="{{ item.coverArtLocalLink }}"
+                                         alt="{{ item.album }}"/>
+
+                                    <div class="progress now-playing-progress-bar">
+                                        <div class="progress-bar progress-bar-warning"
+                                             role="progressbar"
+                                             aria-valuenow="{{ item.progress }}"
+                                             aria-valuemin="0"
+                                             aria-valuemax="100"
+                                             style="width: {{ item.progress }}%"></div>
+                                    </div>
+                                </div>
+                            {% endif %}
                         {% endfor %}
                     </div>
                 </div>
                 <!-- Controls -->
-                <a class="left carousel-control" href="#carousel-example-generic" data-slide="prev"></a>
-                <a class="right carousel-control" href="#carousel-example-generic" data-slide="next"></a>
+                <a class="left carousel-control"
+                   href="#carousel-example-generic" data-slide="prev"></a>
+                <a class="right carousel-control"
+                   href="#carousel-example-generic" data-slide="next"></a>
             </div>
         </div>
     </div>
-    <hr class="visible-xs visible-sm">
 </div>
-<hr class="visible-xs visible-sm">
