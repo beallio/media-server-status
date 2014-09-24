@@ -26,41 +26,50 @@ class Service(object):
         self.logger.debug(
             '{} class initialized'.format(self.__class__.__name__))
         self.server_info = service_info
-        self.SERVICES_STATUS_MAPPING = self._get_status_mappings_dict()
-        self.service_name = None
-        self.connect_status = None
-        self.server_full_url = None
-        self.resolved_status_mapping = dict()
+        self._services_status_mapping = self._get_status_mappings_dict()
+        self._service_name = None
+        self._connect_status = None
+        self._server_full_url = None
+        self._resolved_status_mapping = dict()
         self._temp_img_dir = app.config.get('TEMP_IMAGES', '/tmp')
 
     @property
+    def service_name(self):
+        return self._service_name
+
+    @property
     def get_status_mapping(self):
-        self.resolved_status_mapping = self._get_status_mapping()
-        return self.resolved_status_mapping
+        self._resolved_status_mapping = self._get_status_mapping()
+        return self._resolved_status_mapping
 
     @property
     def get_connection_status(self):
-        self.connect_status = self._test_server_connection()
-        return self.connect_status
+        self._connect_status = self._test_server_connection()
+        return self._connect_status
 
     @property
     def get_server_full_url(self):
-        return self.server_full_url
+        return self._server_full_url
 
     @property
     def get_external_url(self):
         return self._get_config_attrib('external_url')
+
+    @staticmethod
+    def convert_date(dt_obj, in_format, out_format):
+        dt_value = datetime.datetime.strptime(dt_obj, in_format)
+        return dt_value.strftime(out_format)
 
     def _test_server_connection(self):
         # method to be overridden by subclasses
         return
 
     def _get_status_mapping(self):
-        service_name = self.service_name
+        service_name = self._service_name
         output = {service_name: dict()}
         try:
-            output = {service_name: self.SERVICES_STATUS_MAPPING[
-                str(self.connect_status)]}
+            output = {service_name: self._services_status_mapping[
+                str(self._connect_status)]}
             output[service_name][
                 'title'] = self._add_service_name_to_status_mapping()
             if self.get_external_url:
@@ -71,7 +80,7 @@ class Service(object):
 
     def _add_service_name_to_status_mapping(self):
         delim = '-'
-        service_name = self.service_name
+        service_name = self._service_name
         if delim in service_name:
             title = service_name.split(delim)
             title = ' '.join([w.title() for w in title])
@@ -85,23 +94,6 @@ class Service(object):
         except KeyError:
             # Config attribute not found
             return None
-
-    @staticmethod
-    def _strip_base_path(filepath):
-        return filepath.replace(app.config['APP_MODULESLOCATION'], '').lstrip(
-            '/')
-
-    def _test_file_path(self, file_path_key):
-        # //TODO remove after testing
-        output = None
-        try:
-            file_path = self.server_info[file_path_key]
-            if os.path.exists(file_path):
-                output = file_path
-        except KeyError as e:
-            self.logger.error(e)
-        finally:
-            return output
 
     @staticmethod
     def _get_status_mappings_dict():
@@ -146,13 +138,35 @@ class Service(object):
     def _convert_xml_to_json(resp_output):
         return xmltodict.parse(resp_output)
 
-    def _get_img_directory(self, subpath=None):
-        """
-        Creates absolutely directory path for temp images
+    @staticmethod
+    def _build_external_img_path(service_name):
+        base_path = 'img/'
+        return ''.join([base_path, service_name, '?'])
 
-        :param subpath:
-        :return: string
-        """
+    def _test_file_path(self, file_path_key):
+        # //TODO Needed
+        output = None
+        try:
+            file_path = self.server_info[file_path_key]
+            if os.path.exists(file_path):
+                output = file_path
+        except KeyError as err:
+            self.logger.error(err)
+        finally:
+            return output
+
+    """
+    @staticmethod
+    def _strip_base_path(filepath):
+        return filepath.replace(app.config['APP_MODULESLOCATION'], '').lstrip(
+            '/')
+
+
+    def _get_img_directory(self, subpath=None):
+        #Creates absolutely directory path for temp images
+
+        #:param subpath:
+        #:return: string
         if subpath is None:
             subpath = ''
         dir_short = os.path.join(self._temp_img_dir, subpath)
@@ -167,16 +181,14 @@ class Service(object):
                 raise IOError
         return abs_path
 
-    @staticmethod
-    def _build_external_img_path(service_name):
-        basepath = 'img/'
-        return ''.join([basepath, service_name, '?'])
+
+    """
 
 
 class SubSonic(Service):
     def __init__(self, server_info):
         Service.__init__(self, server_info)
-        self.service_name = 'subsonic'
+        self._service_name = 'subsonic'
         self.conn = libsonic.Connection(baseUrl=self.server_info['url'],
                                         username=self.server_info['user'],
                                         password=self.server_info['password'],
@@ -185,21 +197,21 @@ class SubSonic(Service):
                                         apiVersion=self.server_info['api'],
                                         serverPath=self.server_info[
                                             'serverpath'])
-        self.connect_status = self._test_server_connection()
-        self.server_full_url = self._get_server_full_url()
-        self.resolved_status_mapping = self._get_status_mapping()
+        self._connect_status = self._test_server_connection()
+        self._server_full_url = self._get_server_full_url()
+        self._resolved_status_mapping = self._get_status_mapping()
         self._img_base_url = self._build_external_img_path(
-            self.service_name) + 'cover='
+            self._service_name) + 'cover='
 
     def getNowPlayingOrRecentlyAdded(self, num_of_results=None):
         if num_of_results is None:
             num_of_results = 9
         entries = {}
         now_playing_count = 0
-        if not self.connect_status:
+        if not self._connect_status:
             return
         try:
-            entries['now_playing'] = self.get_now_playing()
+            entries['now_playing'] = self.now_playing()
             now_playing_count = len(entries['now_playing'])
             if now_playing_count > num_of_results:
                 entries['now_playing'] = entries['now_playing'][:num_of_results]
@@ -207,7 +219,7 @@ class SubSonic(Service):
             pass
         finally:
             if now_playing_count < num_of_results:
-                entries['recently_added'] = self.get_recently_added(
+                entries['recently_added'] = self.recently_added(
                     num_results=num_of_results)
                 recently_added_count = len(entries['recently_added'])
                 show_recently_added = recently_added_count - now_playing_count
@@ -215,7 +227,7 @@ class SubSonic(Service):
                     entries['recently_added'][:show_recently_added]
         return entries
 
-    def get_recently_added(self, num_results=None):
+    def recently_added(self, num_results=None):
         """
         Returns recently added entries.
 
@@ -246,7 +258,32 @@ class SubSonic(Service):
                 size = 2000
             return self.conn.getCoverArt(aid=cover_art_id, size=size)
 
+    def now_playing(self):
+        """
+        Returns now playing entries from Subsonic server in list format.  Each
+        entry in list represents one song currently playing from server.  Each
+        entry in list is a dict
+
+        :returns: list of [dict]
+        """
+        entries = []
+        nowplaying = self.conn.getNowPlaying()
+        # multiple songs playing
+        how_many_playing = type(nowplaying['nowPlaying']['entry'])
+        if how_many_playing == list:
+            entries = [self._get_entry_info(entry) for entry in
+                       nowplaying['nowPlaying']['entry']]
+        # single song playing
+        elif how_many_playing == dict:
+            entries.append(
+                self._get_entry_info(nowplaying['nowPlaying']['entry']))
+        # remove entries from now playing if user hasn't touched them or
+        # playlist auto advanced in X min
+        entries = [entry for entry in entries if entry['minutesAgo'] <= 10]
+        return entries
+
     def set_output_directory(self, directory):
+        # //TODO remove extraneous code
         self._temp_img_dir = directory
         return self._temp_img_dir == directory
 
@@ -309,18 +346,17 @@ class SubSonic(Service):
         assert type(entry) == dict
         if min_size:
             min_size = 145
-        if min_size:
-            min_size = 500
+        if max_size:
+            max_size = 500
         # create url link to thumbnail coverart, and full-size coverart
-        entry.update(coverArtExternalLink_sm=''.join(
-            [self._img_base_url, str(entry['coverArt']), '&size=',
-             str(min_size)]),
-                     coverArtExternalLink_xl=''.join(
-                         [self._img_base_url, str(entry['coverArt']), '&size=',
-                          str(max_size)]))
-        created_date = datetime.datetime.strptime(entry[u'created'],
-                                                  '%Y-%m-%dT%H:%M:%S')
-        entry[u'created'] = created_date.strftime('%m/%d/%Y %I:%M%p')
+        cover_art_link = [''.join([self._img_base_url, str(entry['coverArt']),
+                                   '&size=', str(size)]) for size in
+                          (min_size, max_size)]
+        entry.update(coverArtExternalLink_sm=cover_art_link[0],
+                     coverArtExternalLink_xl=cover_art_link[1])
+        created_date = self.convert_date(entry[u'created'], '%Y-%m-%dT%H:%M:%S',
+                                         '%m/%d/%Y %I:%M%p')
+        entry[u'created'] = created_date
         try:
             # Return progress on currently playing song(s).  No good way to do
             # this since Subsonic doesn't have access to this info through
@@ -335,30 +371,6 @@ class SubSonic(Service):
                          progress_whole=entry['progress'] * 100)
         return entry
 
-    def get_now_playing(self):
-        """
-        Returns now playing entries from Subsonic server in list format.  Each
-        entry in list represents one song currently playing from server.  Each
-        entry in list is a dict
-
-        :returns: list of [dict]
-        """
-        entries = []
-        nowplaying = self.conn.getNowPlaying()
-        # multiple songs playing
-        how_many_playing = type(nowplaying['nowPlaying']['entry'])
-        if how_many_playing == list:
-            entries = [self._get_entry_info(entry) for entry in
-                       nowplaying['nowPlaying']['entry']]
-        # single song playing
-        elif how_many_playing == dict:
-            entries.append(
-                self._get_entry_info(nowplaying['nowPlaying']['entry']))
-        # remove entries from now playing if user hasn't touched them or
-        # playlist auto advanced in X min
-        entries = [entry for entry in entries if entry['minutesAgo'] <= 10]
-        return entries
-
     def _get_server_full_url(self):
         serverpath, _ = self.server_info['serverpath'].strip('/').split('/')
         return '{url}:{port:d}/{path}'.format(url=self.server_info['url'],
@@ -369,10 +381,10 @@ class SubSonic(Service):
 class CheckCrashPlan(Service):
     def __init__(self, server_info):
         Service.__init__(self, server_info)
-        self.service_name = 'backups'
+        self._service_name = 'backups'
         self.file_path = self._test_file_path('logfile_path')
-        self.connect_status = self._test_server_connection()
-        self.resolved_status_mapping = self._get_status_mapping()
+        self._connect_status = self._test_server_connection()
+        self._resolved_status_mapping = self._get_status_mapping()
 
     def _test_server_connection(self):
         items_to_keep = ['scanning', 'backupenabled']
@@ -396,9 +408,9 @@ class ServerSync(Service):
         Service.__init__(self, server_info)
         self.server_info = server_info
         self.lockfile_path = self.server_info['lockfile_path']
-        self.service_name = 'server-sync'
-        self.connect_status = self._test_server_connection()
-        self.resolved_status_mapping = self._get_status_mapping()
+        self._service_name = 'server-sync'
+        self._connect_status = self._test_server_connection()
+        self._resolved_status_mapping = self._get_status_mapping()
 
     def _test_server_connection(self):
         try:
@@ -422,23 +434,23 @@ class Plex(Service):
         Service.__init__(self, server_info)
         assert type(server_info) is dict
         self.server_info = server_info
-        self.service_name = 'plex'
+        self._service_name = 'plex'
         self.server_internal_url_and_port = self._get_full_url_and_port
         try:
-            self.server_full_url = server_info['external_url']
+            self._server_full_url = server_info['external_url']
         except KeyError as err:
             self.logger.error(
                 'Missing config value {config_value} from {cls}'.format(
                     config_value='external_url',
                     cls=self.__class__.__name__))
             raise exceptions.MissingConfigValue(err)
-        self.connect_status = self._test_server_connection()
-        self.resolved_status_mapping = self._get_status_mapping()
-        self.transcodes = 0
+        self._connect_status = self._test_server_connection()
+        self._resolved_status_mapping = self._get_status_mapping()
+        self._transcodes = 0
         self._cover_mapping = dict()
-        self._img_base_url = self._build_external_img_path(self.service_name)
+        self._img_base_url = self._build_external_img_path(self._service_name)
 
-    def get_recently_added(self, num_results=None):
+    def recently_added(self, num_results=None):
         """
 
         :type num_results: int or unknown
@@ -452,7 +464,7 @@ class Plex(Service):
             videos_trimmed = videos[:num_results]
             return [self._get_video_data(video) for video in videos_trimmed]
 
-        if not self.connect_status:
+        if not self._connect_status:
             return None
         if any([num_results is None, type(num_results) is not int]):
             # Check if correct for maximum number of results is entered
@@ -477,7 +489,7 @@ class Plex(Service):
         return dict(Movies=process_video_data(movies),
                     TVShows=process_video_data(tv_shows))
 
-    def get_now_playing(self):
+    def now_playing(self):
         """
         Returns now playing data from Plex server in a JSON-like dictionary
 
@@ -509,12 +521,12 @@ class Plex(Service):
                 raise exceptions.PlexAPIDataError(msg)
             for video in video_list:
                 # Grab relevant data about Video from JSON data, send the API
-                # call to calculate transcodes, otherwise it will skip and
+                # call to calculate _transcodes, otherwise it will skip and
                 # return 0
                 yield self._get_video_data(video, api_call)
             return
 
-        self.transcodes = 0  # reset serverinfo count
+        self._transcodes = 0  # reset serverinfo count
         api_call = 'nowplaying'
         now_playing_relevant_data = list()
         json_data = self._get_xml_convert_to_json(api_call)
@@ -544,23 +556,23 @@ class Plex(Service):
         :return: binary
         :raises: exceptions.PlexImageError
         """
+
+        def open_image(ext):
+            try:
+                return open(os.path.join(self._temp_img_dir, plex_id + ext),
+                            'rb')
+            except IOError as img_err:
+                raise exceptions.PlexImageError(img_err)
+
         thumbnail = thumbnail is not None
         local = local is not None
         if self._cover_mapping is None:
             # if _cover_mapping is empty we need to initialize Now Playing
-            self.get_now_playing()
+            self.now_playing()
         if thumbnail:
-            try:
-                resp = open(os.path.join(self._temp_img_dir,
-                                         plex_id + '.thumbnail'), 'rb')
-            except IOError as err:
-                raise exceptions.PlexImageError(err)
+            resp = open_image('.thumbnail')
         elif local:
-            try:
-                resp = open(os.path.join(self._temp_img_dir,
-                                         plex_id + '.jpg'), 'rb')
-            except IOError as err:
-                raise exceptions.PlexImageError(err)
+            resp = open_image('.jpg')
         else:
             try:
                 resp = urllib2.urlopen(
@@ -571,7 +583,7 @@ class Plex(Service):
         return resp
 
     @property
-    def get_transcodes(self):
+    def transcodes(self):
         """
         Returns number of current number of Plex transcode sessions
 
@@ -581,8 +593,8 @@ class Plex(Service):
         :return: int
         """
         server_info = self.get_plex_server_info()
-        self.transcodes = server_info.get('transcoderActiveVideoSessions', 0)
-        return self.transcodes
+        self._transcodes = server_info.get('transcoderActiveVideoSessions', 0)
+        return self._transcodes
 
     def get_plex_server_info(self):
         json_show_data = self._get_xml_convert_to_json('serverinfo')
@@ -717,7 +729,8 @@ class Plex(Service):
 
     def _get_xml_convert_to_json(self, api_key, api_suffix=None):
         """
-        Gets Plex data based on api key and converts Plex XML response to JSON format
+        Gets Plex data based on api key and converts Plex XML response to JSON
+        format
 
         :type api_key: str
         :type api_suffix: unknown or str
@@ -740,13 +753,12 @@ class Plex(Service):
         if vidtype == 'TV Shows':
             video_data = self._get_tv_show_data(video, get_type)
         elif vidtype == 'Movies':
-            release_date = datetime.datetime.strptime(
-                video['@originallyAvailableAt'],
-                '%Y-%m-%d')
-            release_date = release_date.strftime('%m/%d/%Y')
+            release_date = video['@originallyAvailableAt']
             video_data = dict(showtitle=video['@title'],
                               summary=video['@summary'],
-                              releasedate=release_date)
+                              releasedate=self.convert_date(release_date,
+                                                            '%Y-%m-%d',
+                                                            '%m/%d/%Y'))
         else:
             # encountered an unexpected video type
             msg = 'Unexpected media type {} encountered'.format(vidtype)
@@ -779,27 +791,6 @@ class Plex(Service):
         return video_data
 
     def _save_cover_art(self, cover_loc):
-        def pillow_save_image(filepath, size):
-            size_map = dict(large=(568, 852),
-                            thumb=(144, 214))
-            if not os.path.exists(filepath):
-                # create plex cover art file if file does not exist
-                try:
-                    size = size_map[size]
-                    im = Image.open(img_data)
-                    im = ImageOps.fit(image=im, size=size,
-                                      method=Image.ANTIALIAS)
-                    im.save(filepath, "JPEG")
-                    self.logger.info(
-                        'Write image file: {}'.format(filepath))
-                except IOError as pil_err:
-                    self.logger.error(
-                        'Image file write failure at {}.  Reason: {}'.
-                        format(filepath, pil_err))
-            else:
-                self.logger.debug('Image file already exists at: {}'.
-                                  format(filepath))
-
         # retrieve image data from Plex server metadata
         img_data = StringIO(urllib2.urlopen(
             urlparse.urljoin(self.server_internal_url_and_port,
@@ -817,14 +808,36 @@ class Plex(Service):
                                    ' {}.\nError message {}').format(img_dir,
                                                                     err))
                 raise
+        img = Image.open(img_data)
         exts = ('.jpg', '.thumbnail')
-        img_filepaths = [''.join([str(cover_loc.split('/')[-1]),
-                                  ext]) for ext in exts]
-        large_art_fp, thumb_art_fp = [os.path.join(img_dir, fp) for fp in
-                                      img_filepaths]
-        pillow_save_image(large_art_fp, size='large')
-        pillow_save_image(thumb_art_fp, size='thumb')
-        return large_art_fp
+        sizes = [(568, 852), (144, 214)]
+        # create filepaths to temp images in temp directory
+        img_filepaths = [os.path.join(img_dir, ''.join(
+            [str(cover_loc.split('/')[-1]), ext])) for ext in exts]
+        # index 0 = size tuple
+        # index 1 = path to file
+        size_and_fps = zip(sizes, img_filepaths)
+        for img_file in size_and_fps:
+            # preserve original file for multiple manipulations
+            temp_img = img.copy()
+            size = img_file[0]
+            filepath = img_file[1]
+            if not os.path.exists(filepath):
+                # create plex cover art file if file does not exist
+                try:
+                    temp_img = ImageOps.fit(image=temp_img, size=size,
+                                            method=Image.ANTIALIAS)
+                    temp_img.save(filepath, "JPEG")
+                    self.logger.info(
+                        'Write image file: {}'.format(filepath))
+                except IOError as pil_err:
+                    self.logger.error(
+                        'Image file write failure at {}.  Reason: {}'.
+                        format(filepath, pil_err))
+            else:
+                self.logger.debug('Image file already exists at: {}'.
+                                  format(filepath))
+        return img_filepaths[0]
 
     def _get_tv_show_data(self, video, get_type=None):
         video_data = dict(showtitle=
@@ -850,12 +863,11 @@ class Plex(Service):
                 # first show in season
                 vid_we_want = vid['Video']
             # get originally date playing on TV
-            aired_date = datetime.datetime.strptime(
-                vid_we_want['@originallyAvailableAt'],
-                '%Y-%m-%d')
-            aired_date = aired_date.strftime('%m/%d/%Y')
+            aired_date = vid_we_want['@originallyAvailableAt']
             video_data.update(title=vid_we_want['@title'],
-                              aired_date=aired_date)
+                              aired_date=self.convert_date(aired_date,
+                                                           "%Y-%m-%d",
+                                                           "%m/%d/%Y"))
 
             # Set individual show summary to parent summary if show summary does
             # not exist

@@ -68,9 +68,9 @@ class APIFunctions(object):
         subsonic = self.subsonic
         plex = self.plex
         return dict(
-            plex_nowplaying=plex.get_now_playing(),
-            subsonic_recentlyadded=subsonic.get_recently_added(num_results=6),
-            plex_recentlyadded=plex.get_recently_added(num_results=6))
+            plex_nowplaying=plex.now_playing(),
+            subsonic_recentlyadded=subsonic.recently_added(num_results=6),
+            plex_recentlyadded=plex.recently_added(num_results=6))
 
     @wrappers.logger('debug')
     def forecast(self):
@@ -80,7 +80,7 @@ class APIFunctions(object):
     @wrappers.logger('debug')
     def plex_transcodes(self):
         self._load_configs()
-        return dict(plex_transcodes=self.plex.get_transcodes)
+        return dict(plex_transcodes=self.plex.transcodes)
 
     def _get_plex_cover_art(self, args):
         self._load_configs()
