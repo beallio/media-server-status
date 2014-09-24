@@ -8,45 +8,30 @@
                     <!-- Wrapper for slides -->
                     <div class="carousel-inner">
                         {% for item in values.subsonic_nowplaying %}
-                            {% if loop.first %}
-                                <div class="item active">
-                                    <img src="{{ item.coverArtExternalLink_xl }}"
-                                         alt="{{ item.album }}"/>
+                        <div class="item {% if loop.first %} active {% endif %}">
+                            <img src="{{ item.coverArtExternalLink_xl }}"
+                                 alt="{{ item.album }}"/>
 
-                                    <div class="progress now-playing-progress-bar">
-                                        <div class="progress-bar progress-bar-warning"
-                                             role="progressbar"
-                                             aria-valuenow="{{ item.progress }}"
-                                             aria-valuemin="0"
-                                             aria-valuemax="100"
-                                             style="width: {{ item.progress }}%"></div>
-                                    </div>
-                                    <div class="album_info"
-                                         style="padding-top: 5px">
-                                        <b class="light">Artist:</b>&nbsp;{{ item.artist }}
-                                        <br>
-                                        <b class="light">Track:</b>&nbsp;{{ item.track }}. {{ item.title }}
-                                        <br>
-                                        <b class="light">Album:</b>&nbsp;{{ item.album }}
-                                        <br>
-                                        <b class="light">Year:</b>&nbsp;{{ item.year }}
-                                    </div>
-                                </div>
-                            {% else %}
-                                <div class="item">
-                                    <img src="{{ item.coverArtLocalLink }}"
-                                         alt="{{ item.album }}"/>
-
-                                    <div class="progress now-playing-progress-bar">
-                                        <div class="progress-bar progress-bar-warning"
-                                             role="progressbar"
-                                             aria-valuenow="{{ item.progress }}"
-                                             aria-valuemin="0"
-                                             aria-valuemax="100"
-                                             style="width: {{ item.progress }}%"></div>
-                                    </div>
-                                </div>
-                            {% endif %}
+                            <div class="progress now-playing-progress-bar">
+                                <div class="progress-bar progress-bar-warning"
+                                     role="progressbar"
+                                     aria-valuenow="{{ item.progress }}"
+                                     aria-valuemin="0"
+                                     aria-valuemax="100"
+                                     style="width: {{ item.progress }}%"></div>
+                            </div>
+                            <dl class="dl-horizontal text-left"
+                                style="margin-top:5px">
+                                <dt class="regular">Artist</dt>
+                                <dd class="light">{{ item.artist }}</dd>
+                                <dt class="regular">Album</dt>
+                                <dd class="light">{{ item.album }}</dd>
+                                <dt class="regular">Year</dt>
+                                <dd class="light">{{ item.year }}</dd>
+                                <dt class="regular">Genre</dt>
+                                <dd class="light">{{ item.genre }}</dd>
+                            </dl>
+                        </div>
                         {% endfor %}
                     </div>
                 </div>

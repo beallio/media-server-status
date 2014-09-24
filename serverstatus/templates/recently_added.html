@@ -1,5 +1,5 @@
-{% set isnowplaying = (values.plex_nowplaying != None) or (values.subsonic_nowplaying  != None) %}
-{% set header_size = 3 if isnowplaying else 1 %}
+{% set isnowplaying=(values.plex_nowplaying != None) or (values.subsonic_nowplaying  != None) %}
+{% set header_size = "3" if isnowplaying else "1" %}
 
 <div class="row">
     <div class="col-sm-12">
