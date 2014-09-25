@@ -1,46 +1,124 @@
+{% set plex_active=(values.plex_nowplaying != None) %}
+{% set subsonic_active=(values.subsonic_nowplaying != None) %}
 <div id="now-playing">
-    <h1 class="extralight">Now Playing</h1>
-    <hr>
-    <div style="overflow: auto; width: 100%; margin: 0 auto">
-        <div class="col-md-12">
-            <div id="carousel-example-generic" class=" carousel slide">
+    <div style="width: 100%; margin: 0 auto">
+        {% if plex_active %} <!-- Begin Video Now Playing section -->
+            <div id="carousel-video" class=" carousel slide"
+                 data-ride="carousel">
                 <div class="thumbnail">
                     <!-- Wrapper for slides -->
                     <div class="carousel-inner">
-                        {% for item in values.subsonic_nowplaying %}
-                        <div class="item {% if loop.first %} active {% endif %}">
-                            <img src="{{ item.coverArtExternalLink_xl }}"
-                                 alt="{{ item.album }}"/>
+                        {% for item in values.plex_nowplaying %}
+                            <div class="item {% if loop.first %}active{% endif %}">
+                                <img src="{{ item.art_external_url }}&local=1"
+                                     alt="{{ item.showtitle }}"/>
 
-                            <div class="progress now-playing-progress-bar">
-                                <div class="progress-bar progress-bar-warning"
-                                     role="progressbar"
-                                     aria-valuenow="{{ item.progress }}"
-                                     aria-valuemin="0"
-                                     aria-valuemax="100"
-                                     style="width: {{ item.progress }}%"></div>
+                                <div class="progress now-playing-progress-bar">
+                                    <div class="progress-bar progress-bar-warning"
+                                         role="progressbar"
+                                         aria-valuenow="{{ item.progress }}"
+                                         aria-valuemin="0"
+                                         aria-valuemax="100"
+                                         style="width: {{ item.progress }}%"></div>
+                                </div>
+                                <dl class="dl-horizontal text-left"
+                                    style="margin-top: 5px">
+                                    {% if item.type == 'Movies' %}
+                                        <dt class="regular">Title</dt>
+                                        <dd class="light">{{ item.showtitle }}</dd>
+                                        <dt class="regular">Summary</dt>
+                                        <dd class="light">{{ item.summary }}</dd>
+                                        <dt class="regular">Release
+                                                            Date
+                                        </dt>
+                                        <dd class="light">{{ item.releasedate }}
+                                        </dd>
+                                        <dt class="regular">Rating</dt>
+                                        <dd class="light">{{ item.rating|round(1,
+                                                      'common') }}
+                                        </dd>
+
+                                    {% else %}
+
+                                        <dt class="regular">Show</dt>
+                                        <dd class="light">{{ item.showtitle }}</dd>
+                                        <dt class="regular">Season</dt>
+                                        <dd class="light">{{ item.season }}</dd>
+                                        <dt class="regular">Episode</dt>
+                                        <dd class="light">{{ '{0:02d}'.format(item.episode_number) }}
+                                        </dd>
+                                        <dt class="regular">Title</dt>
+                                        <dd class="light">{{ item.title }}</dd>
+                                        <dt class="regular">Summary</dt>
+                                        <dd class="light">{{ item.summary }}</dd>
+                                        <dt class="regular">Originally
+                                                            Aired
+                                        </dt>
+                                        <dd class="light">{{ item.aired_date }}</dd>
+                                    {% endif %}
+                                </dl>
                             </div>
-                            <dl class="dl-horizontal text-left"
-                                style="margin-top:5px">
-                                <dt class="regular">Artist</dt>
-                                <dd class="light">{{ item.artist }}</dd>
-                                <dt class="regular">Album</dt>
-                                <dd class="light">{{ item.album }}</dd>
-                                <dt class="regular">Year</dt>
-                                <dd class="light">{{ item.year }}</dd>
-                                <dt class="regular">Genre</dt>
-                                <dd class="light">{{ item.genre }}</dd>
-                            </dl>
-                        </div>
                         {% endfor %}
                     </div>
                 </div>
                 <!-- Controls -->
-                <a class="left carousel-control"
-                   href="#carousel-example-generic" data-slide="prev"></a>
-                <a class="right carousel-control"
-                   href="#carousel-example-generic" data-slide="next"></a>
+                <a class="left carousel-control" role="button"
+                   href="#carousel-video" data-slide="prev"></a>
+                <a class="right carousel-control" role="button"
+                   href="#carousel-video" data-slide="next"></a>
             </div>
-        </div>
+        {% endif %}<!-- End Video Now Playing section -->
+                             {% if subsonic_active %}<!--
+                                  Begin Music Now Playing section -->
+                                 <div id="carousel-music"
+                                      class=" carousel slide">
+                                     <div class="thumbnail">
+                                         <!-- Wrapper for slides -->
+                                         <div class="carousel-inner">
+                                             {% for item in values.subsonic_nowplaying %}
+                                                 <div class="item {% if loop.first %} active {% endif %}">
+                                                     <img src="{{ item.coverArtExternalLink_xl }}"
+                                                          alt="{{ item.album }}"/>
+
+                                                     <div class="progress now-playing-progress-bar">
+                                                         <div class="progress-bar progress-bar-warning"
+                                                              role="progressbar"
+                                                              aria-valuenow="{{ item.progress }}"
+                                                              aria-valuemin="0"
+                                                              aria-valuemax="100"
+                                                              style="width: {{ item.progress }}%"></div>
+                                                     </div>
+                                                     <dl class="dl-horizontal text-left"
+                                                         style="margin-top:5px">
+                                                         <dt class="regular">
+                                                             Artist
+                                                         </dt>
+                                                         <dd class="light">{{ item.artist }}</dd>
+                                                         <dt class="regular">
+                                                             Album
+                                                         </dt>
+                                                         <dd class="light">{{ item.album }}</dd>
+                                                         <dt class="regular">
+                                                             Year
+                                                         </dt>
+                                                         <dd class="light">{{ item.year }}</dd>
+                                                         <dt class="regular">
+                                                             Genre
+                                                         </dt>
+                                                         <dd class="light">{{ item.genre }}</dd>
+                                                     </dl>
+                                                 </div>
+                                             {% endfor %}
+                                         </div>
+                                     </div>
+                                     <!-- Controls -->
+                                     <a class="left carousel-control"
+                                        href="#carousel-music"
+                                        data-slide="prev"></a>
+                                     <a class="right carousel-control"
+                                        href="#carousel-music"
+                                        data-slide="next"></a>
+                                 </div>
+                             {% endif %}<!-- End Music Now Playing section -->
     </div>
 </div>

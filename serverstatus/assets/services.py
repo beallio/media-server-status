@@ -20,12 +20,12 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Service(object):
-    def __init__(self, service_info):
-        assert type(service_info) is dict
+    def __init__(self, service_config):
+        assert isinstance(service_config, dict)
         self.logger = LOGGER
         self.logger.debug(
             '{} class initialized'.format(self.__class__.__name__))
-        self.server_info = service_info
+        self.service_config = service_config
         self._services_status_mapping = self._status_mappings_dict()
         self._service_name = None
         self._connect_status = None
@@ -90,7 +90,7 @@ class Service(object):
 
     def _get_config_attrib(self, attrib):
         try:
-            return self.server_info[attrib]
+            return self.service_config[attrib]
         except KeyError:
             # Config attribute not found
             return None
@@ -147,7 +147,7 @@ class Service(object):
         # //TODO Needed
         output = None
         try:
-            file_path = self.server_info[file_path_key]
+            file_path = self.service_config[file_path_key]
             if os.path.exists(file_path):
                 output = file_path
         except KeyError as err:
@@ -160,13 +160,14 @@ class SubSonic(Service):
     def __init__(self, server_info):
         Service.__init__(self, server_info)
         self._service_name = 'subsonic'
-        self.conn = libsonic.Connection(baseUrl=self.server_info['url'],
-                                        username=self.server_info['user'],
-                                        password=self.server_info['password'],
-                                        port=self.server_info['port'],
-                                        appName=self.server_info['appname'],
-                                        apiVersion=self.server_info['api'],
-                                        serverPath=self.server_info[
+        self.conn = libsonic.Connection(baseUrl=self.service_config['url'],
+                                        username=self.service_config['user'],
+                                        password=self.service_config[
+                                            'password'],
+                                        port=self.service_config['port'],
+                                        appName=self.service_config['appname'],
+                                        apiVersion=self.service_config['api'],
+                                        serverPath=self.service_config[
                                             'serverpath'])
         self._connect_status = self._test_server_connection()
         self._server_full_url = self._get_server_full_url()
@@ -196,7 +197,7 @@ class SubSonic(Service):
                 entry in recently_added_generator(num_results)]
 
     def get_cover_art(self, cover_art_id, size=None):
-        assert type(cover_art_id) is int
+        assert isinstance(cover_art_id, int)
         if any([size is None, size <= 0, type(size) is not int]):
             return self.conn.getCoverArt(aid=cover_art_id)
         else:
@@ -214,20 +215,21 @@ class SubSonic(Service):
         :returns: list of [dict]
         """
         entries = []
-        nowplaying = self.conn.getNowPlaying()
+        now_playing = self.conn.getNowPlaying()
         try:
-            many_songs_playing = type(nowplaying['nowPlaying']['entry']) == list
+            many_songs_playing = isinstance(now_playing['nowPlaying']['entry'],
+                                            list)
         except TypeError:
             # no songs playing
             return None
         if many_songs_playing:
             # multiple songs playing
             entries = [self._get_entry_info(entry) for entry in
-                       nowplaying['nowPlaying']['entry']]
+                       now_playing['nowPlaying']['entry']]
         elif not many_songs_playing:
             # single song playing
             entries.append(
-                self._get_entry_info(nowplaying['nowPlaying']['entry']))
+                self._get_entry_info(now_playing['nowPlaying']['entry']))
         # remove entries from now playing if user hasn't touched them or
         # playlist auto advanced in X min
         return [self._get_entry_info(entry, max_size=800) for entry in entries
@@ -251,8 +253,8 @@ class SubSonic(Service):
             assert connection_status
         except AssertionError:
             err = 'Unable to reach Subsonic server'
-            self.logger.error()
-            raise exceptions.SubsonicConnectionError(err)
+            self.logger.error(err)
+            # raise exceptions.SubsonicConnectionError(err)
         finally:
             return connection_status
 
@@ -307,8 +309,8 @@ class SubSonic(Service):
                      coverArtExternalLink_xl=cover_art_link[1])
         try:
             created_date = self.convert_date_fmt(entry[u'created'],
-                                             '%Y-%m-%dT%H:%M:%S',
-                                         '%m/%d/%Y %I:%M%p')
+                                                 '%Y-%m-%dT%H:%M:%S',
+                                                 '%m/%d/%Y %I:%M%p')
         except ValueError as dt_conv_err:
             self.logger.error('Error converting date: {}'.format(dt_conv_err))
         else:
@@ -328,9 +330,9 @@ class SubSonic(Service):
         return entry
 
     def _get_server_full_url(self):
-        serverpath, _ = self.server_info['serverpath'].strip('/').split('/')
-        return '{url}:{port:d}/{path}'.format(url=self.server_info['url'],
-                                              port=self.server_info['port'],
+        serverpath, _ = self.service_config['serverpath'].strip('/').split('/')
+        return '{url}:{port:d}/{path}'.format(url=self.service_config['url'],
+                                              port=self.service_config['port'],
                                               path=serverpath)
 
 
@@ -386,14 +388,14 @@ class Plex(Service):
     """
     url_scheme = 'http://'
 
-    def __init__(self, server_info):
-        Service.__init__(self, server_info)
-        assert type(server_info) is dict
-        self.server_info = server_info
+    def __init__(self, server_config):
+        Service.__init__(self, server_config)
+        assert type(server_config) is dict
+        self.service_config = server_config
         self._service_name = 'plex'
         self.server_internal_url_and_port = self._get_full_url_and_port
         try:
-            self._server_full_url = server_info['external_url']
+            self._server_full_url = server_config['external_url']
         except KeyError as err:
             self.logger.error(
                 'Missing config value {config_value} from {cls}'.format(
@@ -461,10 +463,10 @@ class Plex(Service):
             # In JSON form Plex returns multiple videos as a list of
             # OrderedDicts, and a single video as an OrderedDict
             # Convert the single video to a list for processing
-            if type(vid_data) is OrderedDict:
+            if isinstance(vid_data, OrderedDict):
                 video_list = list()
                 video_list.append(vid_data)
-            elif type(vid_data) is list:
+            elif isinstance(vid_data, list):
                 video_list = vid_data
             else:
                 # Plex returned data that we haven't seen before.
@@ -576,7 +578,7 @@ class Plex(Service):
         """
         resp = None
         try:
-            if self.server_info['local_network_auth']:
+            if self.service_config['local_network_auth']:
                 # local network authentication required
                 # // TODO Need to complete code for authorization if necessary
                 pass
@@ -640,14 +642,14 @@ class Plex(Service):
 
         :return: str
         """
-        port = str(self.server_info.get('internal_port', '32400'))
-        if port != self.server_info.get('internal_port') or str(port) != \
-                self.server_info.get('internal_port'):
+        port = str(self.service_config.get('internal_port', '32400'))
+        if port != self.service_config.get('internal_port') or str(port) != \
+                self.service_config.get('internal_port'):
             self._log_warning_for_missing_config_value(
                 cls_name=self.__class__.__name__, default=port,
                 config_val='port')
         try:
-            internal_url = self.server_info['internal_url'].replace(
+            internal_url = self.service_config['internal_url'].replace(
                 Plex.url_scheme, '').lstrip('/')
         except KeyError:
             internal_url = 'localhost'
@@ -697,6 +699,7 @@ class Plex(Service):
         return self._convert_xml_to_json(xml_data)
 
     def _get_video_data(self, video, get_type=None):
+        is_now_playing = get_type == 'nowplaying'
         # need a separate dict for section mapping since Plex returns different
         # data for Now Playing and Recently Added
         library_section_mapping = {'1': 'Movies', '2': 'TV Shows'}
@@ -714,15 +717,26 @@ class Plex(Service):
             video_data = dict(showtitle=video['@title'],
                               summary=video['@summary'],
                               releasedate=self.convert_date_fmt(release_date,
-                                                            '%Y-%m-%d',
-                                                            '%m/%d/%Y'))
+                                                                '%Y-%m-%d',
+                                                                '%m/%d/%Y'))
         else:
             # encountered an unexpected video type
             msg = 'Unexpected media type {} encountered'.format(vidtype)
             self.logger.error(msg)
             raise exceptions.PlexAPIDataError(msg)
-        # add common elements to video dict
-        plex_path_to_art = video['@thumb']
+        if is_now_playing:
+            # only applicable if we want to retrieve now playing data from Plex
+            plex_path_to_art = video['@grandparentThumb']
+            try:
+                # this is only relevant for videos that are currently playing
+                video_data['progress'] = (float(video['@viewOffset']) / float(
+                    video['@duration'])) * 100.0
+            except KeyError:
+                # video's not playing - not an issue
+                video_data['progress'] = 0
+                # add common elements to video dict
+        else:
+            plex_path_to_art = video['@thumb']
         self._save_cover_art(self.server_internal_url_and_port +
                              plex_path_to_art)
         arturlmapped_value = os.path.basename(plex_path_to_art)
@@ -735,16 +749,6 @@ class Plex(Service):
         # security through obfuscation /s
         self._cover_mapping[arturlmapped_value] = plex_path_to_art
         video_data['rating'] = float(video.get('@rating', 0))
-        if get_type == 'nowplaying':
-            # only applicable if we want to retrieve now playing data from Plex
-            try:
-                # this is only relevant for videos that are currently playing
-                video_data['progress'] = (float(video['@viewOffset']) / float(
-                    video['@duration'])) * 100.0
-            except KeyError:
-                # video's not playing - not an issue
-                video_data['progress'] = 0
-                pass
         return video_data
 
     def _save_cover_art(self, cover_loc):
@@ -752,24 +756,22 @@ class Plex(Service):
         img_data = StringIO(urllib2.urlopen(
             urlparse.urljoin(self.server_internal_url_and_port,
                              cover_loc)).read())
-        # pull temporary image directory location from flask configuration
-        img_dir = self._temp_img_dir
         # check if temp directory exists, if not attempt to create directory
-        if not os.path.exists(img_dir):
+        if not os.path.exists(self._temp_img_dir):
             try:
-                os.mkdir(img_dir)
+                os.mkdir(self._temp_img_dir)
                 self.logger.info('Creating temporary image directory {}'.
-                                 format(img_dir))
+                                 format(self._temp_img_dir))
             except OSError as err:
                 self.logger.error(('Failure creating temporary image directory'
-                                   ' {}.\nError message {}').format(img_dir,
-                                                                    err))
+                                   ' {}.\nError message {}').format(
+                    self._temp_img_dir, err))
                 raise
         img = Image.open(img_data)
         exts = ('.jpg', '.thumbnail')
         sizes = [(568, 852), (144, 214)]
         # create filepaths to temp images in temp directory
-        img_filepaths = [os.path.join(img_dir, ''.join(
+        img_filepaths = [os.path.join(self._temp_img_dir, ''.join(
             [str(cover_loc.split('/')[-1]), ext])) for ext in exts]
         # index 0 = size tuple
         # index 1 = path to file
@@ -797,37 +799,40 @@ class Plex(Service):
         return img_filepaths[0]
 
     def _get_tv_show_data(self, video, get_type=None):
+        is_now_playing = get_type == 'nowplaying'
         video_data = dict(showtitle=
                           video.get('@parentTitle',
                                     video.get('@grandparentTitle')),
                           episode_number=int(video.get('@leafCount',
                                                        video.get('@index'))),
                           summary=video.get('@parentSummary',
-                                            video.get('@summary')),
-                          season=video['@title'])
-        if get_type != 'nowplaying':
+                                            video.get('@summary'))
+                          if video['@summary'] != '' else 'Not available',
+                          season=video['@title'].lstrip('Season ') if not
+                          is_now_playing else video['@parentIndex'])
+        if not is_now_playing:
             json_show_data = self._get_xml_convert_to_json('serverinfo',
                                                            video['@key'].
                                                            lstrip('/'))
-            vid = json_show_data['MediaContainer']
-            video_data.update(rating=vid.get('@grandparentContentRating', ''),
-                              studio=vid['@grandparentStudio'])
+            video = json_show_data['MediaContainer']
+            video_data.update(rating=video.get('@grandparentContentRating', ''),
+                              studio=video['@grandparentStudio'])
             try:
                 # if there's more than one episode in the season
-                vid_we_want = vid['Video'][
+                video = video['Video'][
                     int(video_data['episode_number']) - 1]
             except KeyError:
                 # first show in season
-                vid_we_want = vid['Video']
-            # get originally date playing on TV
-            aired_date = vid_we_want['@originallyAvailableAt']
-            video_data.update(title=vid_we_want['@title'],
-                              aired_date=self.convert_date_fmt(aired_date,
+                video = video['Video']
+        # get originally date playing on TV
+        aired_date = video['@originallyAvailableAt']
+        video_data.update(title=video['@title'],
+                          aired_date=self.convert_date_fmt(aired_date,
                                                            "%Y-%m-%d",
                                                            "%m/%d/%Y"))
 
-            # Set individual show summary to parent summary if show summary does
-            # not exist
-            if vid_we_want['@summary'] != '':
-                video_data['summary'] = vid_we_want['@summary']
+        # Set individual show summary to parent summary if show summary does
+        # not exist
+        if video['@summary'] != '':
+            video_data['summary'] = video['@summary']
         return video_data
