@@ -32,17 +32,12 @@
                     <div class="row">
                         <div class="col-md-12">
                             <div class="panel panel-default" id="panel-weather">
-                                <div class="panel-heading"
-                                     data-toggle="collapse"
-                                     data-parent="#panel-weather"
-                                     data-target="#panel-body-weather">
+                                <div class="panel-heading">
                                     <h4 class="panel-title extralight">
                                         Weather
                                     </h4>
                                 </div>
-                                <div class="panel-collapse collapse in weather"
-                                     id="panel-body-weather">
-
+                                <div class="weather" id="panel-body-weather">
                                 </div>
                             </div>
                         </div>
@@ -52,19 +47,13 @@
                         <div class="col-md-12">
                             <div class="panel panel-default"
                                  id="panel-bandwidth">
-                                <div class="panel-heading"
-                                     data-toggle="collapse"
-                                     data-parent="#panel-bandwidth"
-                                     data-target="#panel-body-bandwidth">
+                                <div class="panel-heading">
                                     <h4 class="panel-title extralight">
                                         Bandwidth
                                     </h4>
                                 </div>
-                                <div class="panel-collapse collapse in"
-                                     id="panel-body-bandwidth">
-                                    <div class="panel-body">
-                                        {% include "bandwidth.html" %}
-                                    </div>
+                                <div class="panel-body">
+                                    {% include "bandwidth.html" %}
                                 </div>
                             </div>
                         </div>
@@ -74,18 +63,12 @@
                         <div class="col-md-12">
                             <div class="panel panel-default"
                                  id="panel-services">
-                                <div class="panel-heading"
-                                     data-toggle="collapse"
-                                     data-parent="#panel-services"
-                                     data-target="#panel-body-services">
+                                <div class="panel-heading">
                                     <h4 class="panel-title extralight">
                                         Services
                                     </h4>
                                 </div>
-                                <div class="panel-collapse collapse in"
-                                     id="panel-body-services">
-                                    <div class="services" id="services"></div>
-                                </div>
+                                <div class="services" id="services"></div>
                             </div>
                         </div>
                     </div>
@@ -99,31 +82,21 @@
                 <div class="col-md-3">
                     <!-- System info / Load Panel -->
                     <div class="panel panel-default" id="panel-systeminfo">
-                        <div class="panel-heading" data-toggle="collapse"
-                             data-parent="#panel-systeminfo"
-                             data-target="#panel-body-systeminfo">
+                        <div class="panel-heading">
                             <h4 class="panel-title extralight">
                                 System
                             </h4>
                         </div>
-                        <div class="panel-collapse collapse in"
-                             id="panel-body-systeminfo">
-                            <div class="system-info"></div>
-                        </div>
+                        <div class="system-info"></div>
                     </div>
                     <!-- Storage Panel -->
                     <div class="panel panel-default">
-                        <div class="panel-heading" data-toggle="collapse"
-                             data-parent="#panel-storage"
-                             data-target="#panel-body-storage">
+                        <div class="panel-heading">
                             <h4 class="panel-title extralight">
                                 Storage
                             </h4>
                         </div>
-                        <div class="panel-collapse collapse in"
-                             id="panel-body-storage">
-                            <div class="storage"></div>
-                        </div>
+                        <div class="storage"></div>
                     </div>
                 </div>
             </div>

@@ -808,8 +808,8 @@ class Plex(Service):
                           summary=video.get('@parentSummary',
                                             video.get('@summary'))
                           if video['@summary'] != '' else 'Not available',
-                          season=video['@title'].lstrip('Season ') if not
-                          is_now_playing else video['@parentIndex'])
+                          season=int(video['@title'].lstrip('Season ')) if not
+                          is_now_playing else int(video['@parentIndex']))
         if not is_now_playing:
             json_show_data = self._get_xml_convert_to_json('serverinfo',
                                                            video['@key'].

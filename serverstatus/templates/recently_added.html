@@ -2,129 +2,138 @@
 {% set header_size = "3" if isnowplaying else "1" %}
 <div class="row">
     <h{{ header_size }} class="extralight main-heading">
-    Recently Added
+        Recently Added
     </h{{ header_size }}>
 </div>
 <div class="row">
     <div class="panel-group" id="accordion">
-    <!-- Begin Movie/TV section -->
-    {% for videogroup in values.plex_recentlyadded|dictsort(false, 'value') %}
-        {% set vidgroup = videogroup[0] %}
-        {% set items = videogroup[1] %}
-        <div class="panel panel-default">
-            <div class="panel-heading"
-                    {% if isnowplaying %} data-toggle="collapse" {% endif %}
-                 data-parent="#accordion" data-target="#collapse{{ vidgroup }}">
-                <h4 class="panel-title extralight">
-                    {{ vidgroup }}
-                </h4>
-            </div>
-            <div id="collapse{{ vidgroup }}"
-                 class="panel-collapse collapse{% if not isnowplaying %} in{% endif %}">
-                <div class="panel-body">
-                    <div class="row">
-                        {% for item in items %}
-                            <div class="col-sm-4">
-                                <a href="#" class="thumbnail"
-                                   data-toggle="modal"
-                                   data-target="#{{ vidgroup }}Modal{{ loop.index }}">
-                                    <img src="{{ item.art_external_url }}&thumbnail=1"
-                                         id="{{ vidgroup }}-cover{{ loop.index }}"/>
-                                </a>
-                            </div>
-
-                            <!-- Modal {{ vidgroup }} {{ loop.index }}-->
-                            <div class="modal fade"
-                                 id="{{ vidgroup }}Modal{{ loop.index }}"
-                                 tabindex="-1"
-                                 role="dialog"
-                                 aria-labelledby="
-                                         {{ vidgroup }}{{ loop.index }}"
-                                 aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-body">
-                                            <img src="{{ item.art_external_url }}&local=1"
-                                                 style="width: 100%;"
-                                                 class="img-rounded"/>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <dl class="dl-horizontal text-left">
-                                                {% if item.type == 'Movies' %}
-                                                    <dt class="regular">Title
-                                                    </dt>
-                                                    <dd class="light">{{ item.showtitle }}</dd>
-                                                    <dt class="regular">
-                                                        Summary
-                                                    </dt>
-                                                    <dd class="light">{{ item.summary }}</dd>
-                                                    <dt class="regular">Release
-                                                                        Date
-                                                    </dt>
-                                                    <dd class="light">{{ item.releasedate }}
-                                                    </dd>
-                                                    <dt class="regular">Rating
-                                                    </dt>
-                                                    <dd class="light">{{ item.rating|round(1,
-                                                      'common') }}
-                                                    </dd>
-                                                    <dt class="regular">Added
-                                                    </dt>
-                                                    <dd class="light">{{ item.added_at }}</dd>
-
-                                                {% else %}
-
-                                                    <dt class="regular">Season
-                                                    </dt>
-                                                    <dd class="light">{{ item.season }}</dd>
-                                                    <dt class="regular">
-                                                        Episode
-                                                    </dt>
-                                                    <dd class="light">{{ '{0:02d}'.format(item.episode_number) }}
-                                                    </dd>
-                                                    <dt class="regular">Title
-                                                    </dt>
-                                                    <dd class="light">{{ item.title }}</dd>
-                                                    <dt class="regular">
-                                                        Summary
-                                                    </dt>
-                                                    <dd class="light">{{ item.summary }}</dd>
-                                                    <dt class="regular">
-                                                        Originally
-                                                        Aired
-                                                    </dt>
-                                                    <dd class="light">{{ item.aired_date }}</dd>
-                                                    <dt class="regular">Added
-                                                    </dt>
-                                                    <dd class="light">{{ item.added_at }}</dd>
-
-                                                {% endif %}
-                                            </dl>
-                                            <button type="button"
-                                                    class="btn btn-default"
-                                                    data-dismiss="modal">Close
-                                            </button>
-                                        </div>
-                                        <!-- End Modal footer -->
-                                    </div>
-                                    <!-- End Modal content -->
-                                </div>
-                                <!-- End Modal dialog -->
-                            </div>
-                            <!-- End Modal -->
-                            <!-- End Modal {{ vidgroup }} {{ loop.index }} -->
-                        {% endfor %}
-                    </div>
-                    <!-- End row -->
+        <!-- Begin Movie/TV section -->
+        {% for videogroup in values.plex_recentlyadded|dictsort(false, 'value') %}
+            {% set vidgroup = videogroup[0] %}
+            {% set items = videogroup[1] %}
+            <div class="panel panel-default">
+                <div class="panel-heading"
+                        {% if isnowplaying %} data-toggle="collapse" {% endif %}
+                     data-parent="#accordion"
+                     data-target="#collapse{{ vidgroup }}">
+                    <h4 class="panel-title extralight">
+                        {{ vidgroup }}
+                    </h4>
                 </div>
-                <!-- End Panel body -->
-            </div>
-            <!-- End Panel collapse -->
-        </div> <!-- End Panel {{ vidgroup }} -->
-    {% endfor %}
-    <!-- End Movie/TV section -->
+                <div id="collapse{{ vidgroup }}"
+                     class="panel-collapse collapse{% if not isnowplaying %} in{% endif %}">
+                    <div class="panel-body">
+                        <div class="row">
+                            {% for item in items %}
+                                <div class="col-sm-4">
+                                    <a href="#" class="thumbnail"
+                                       data-toggle="modal"
+                                       data-target="#{{ vidgroup }}Modal{{ loop.index }}">
+                                        <img src="{{ item.art_external_url }}&thumbnail=1"
+                                             id="{{ vidgroup }}-cover{{ loop.index }}"/>
+                                    </a>
+                                </div>
 
-    <!-- Begin Music Section -->
+                                <!-- Modal {{ vidgroup }} {{ loop.index }}-->
+                                <div class="modal fade"
+                                     id="{{ vidgroup }}Modal{{ loop.index }}"
+                                     tabindex="-1"
+                                     role="dialog"
+                                     aria-labelledby="
+                                         {{ vidgroup }}{{ loop.index }}"
+                                     aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-body">
+                                                <img src="{{ item.art_external_url }}&local=1"
+                                                     style="width: 100%;"
+                                                     class="img-rounded"/>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <dl class="dl-horizontal text-left">
+                                                    {% if item.type == 'Movies' %}
+                                                        <dt class="regular">
+                                                            Title
+                                                        </dt>
+                                                        <dd class="light">{{ item.showtitle }}</dd>
+                                                        <dt class="regular">
+                                                            Summary
+                                                        </dt>
+                                                        <dd class="light">{{ item.summary }}</dd>
+                                                        <dt class="regular">
+                                                            Release
+                                                            Date
+                                                        </dt>
+                                                        <dd class="light">{{ item.releasedate }}
+                                                        </dd>
+                                                        <dt class="regular">
+                                                            Rating
+                                                        </dt>
+                                                        <dd class="light">{{ item.rating|round(1,
+                                                      'common') }}
+                                                        </dd>
+                                                        <dt class="regular">
+                                                            Added
+                                                        </dt>
+                                                        <dd class="light">{{ item.added_at }}</dd>
+
+                                                    {% else %}
+
+                                                        <dt class="regular">
+                                                            Season
+                                                        </dt>
+                                                        <dd class="light">{{ '{0:02d}'.format(item.season) }}</dd>
+                                                        <dt class="regular">
+                                                            Episode
+                                                        </dt>
+                                                        <dd class="light">{{ '{0:02d}'.format(item.episode_number) }}
+                                                        </dd>
+                                                        <dt class="regular">
+                                                            Title
+                                                        </dt>
+                                                        <dd class="light">{{ item.title }}</dd>
+                                                        <dt class="regular">
+                                                            Summary
+                                                        </dt>
+                                                        <dd class="light">{{ item.summary }}</dd>
+                                                        <dt class="regular">
+                                                            Originally
+                                                            Aired
+                                                        </dt>
+                                                        <dd class="light">{{ item.aired_date }}</dd>
+                                                        <dt class="regular">
+                                                            Added
+                                                        </dt>
+                                                        <dd class="light">{{ item.added_at }}</dd>
+
+                                                    {% endif %}
+                                                </dl>
+                                                <button type="button"
+                                                        class="btn btn-default"
+                                                        data-dismiss="modal">
+                                                    Close
+                                                </button>
+                                            </div>
+                                            <!-- End Modal footer -->
+                                        </div>
+                                        <!-- End Modal content -->
+                                    </div>
+                                    <!-- End Modal dialog -->
+                                </div>
+                                <!-- End Modal -->
+                                <!-- End Modal {{ vidgroup }} {{ loop.index }} -->
+                            {% endfor %}
+                        </div>
+                        <!-- End row -->
+                    </div>
+                    <!-- End Panel body -->
+                </div>
+                <!-- End Panel collapse -->
+            </div> <!-- End Panel {{ vidgroup }} -->
+        {% endfor %}
+        <!-- End Movie/TV section -->
+
+        <!-- Begin Music Section -->
         <div class="panel panel-default">
             <div class="panel-heading"
                     {% if isnowplaying %}
@@ -185,10 +194,10 @@
                             <!-- End Modal music {{ loop.index }} -->
                         {% endfor %}
 
-                </div>
+                    </div>
                     <!-- End Music Section -->
+                </div>
             </div>
         </div>
     </div>
-</div>
 </div>

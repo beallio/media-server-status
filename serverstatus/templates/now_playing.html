@@ -1,6 +1,11 @@
 {% set plex_active=(values.plex_nowplaying != None) %}
 {% set subsonic_active=(values.subsonic_nowplaying != None) %}
 <div id="now-playing">
+    <div class="row">
+        <h1 class="extralight main-heading">
+            Now Playing
+        </h1>
+    </div>
     <div style="width: 100%; margin: 0 auto">
         {% if plex_active %} <!-- Begin Video Now Playing section -->
             <div id="carousel-video" class=" carousel slide"
@@ -43,7 +48,7 @@
                                         <dt class="regular">Show</dt>
                                         <dd class="light">{{ item.showtitle }}</dd>
                                         <dt class="regular">Season</dt>
-                                        <dd class="light">{{ item.season }}</dd>
+                                        <dd class="light">{{ '{0:02d}'.format(item.season) }}</dd>
                                         <dt class="regular">Episode</dt>
                                         <dd class="light">{{ '{0:02d}'.format(item.episode_number) }}
                                         </dd>
