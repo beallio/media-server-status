@@ -135,7 +135,7 @@ a.btn_mod {
 .weather-icon h1 {
     font-size: 800%;
     margin-bottom: 0;
-    margin-top: 10px;
+    margin-top: 0;
 }
 
 #weather.panel-body {

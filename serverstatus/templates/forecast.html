@@ -1,37 +1,45 @@
 <div class="panel-body" id="weather">
     <div class="row">
-        <div class="col-xs-6 weather-icon">
-            <h1 data-icon="{{ values.current_summary_icon }}"></h1>
-        </div>
-        <div class="col-xs-6">
-            <h1 class="regular">{{ values.current_temp }}</h1>
-            <h4 class="regular">{{ values.current_summary }}</h4>
-            <h5 class="extralight">Feels like {{ values.feels_like_temp }}</h5>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm-12">
-                <h4 class="extralight extra-bottom">
-                    Wind: {{ values.current_windspeed }} mph {% if
+        <ul class="list-inline" style="margin: 0">
+            <li class="weather-icon" style="padding: 0">
+                <h1 data-icon="{{ values.current_summary_icon }}"></h1>
+            </li>
+
+            <li>
+            <li class="list-unstyled" style="padding: 0">
+                <h1 class="regular"
+                    style="margin: 0">{{ values.current_temp }}</h1>
+                <h4 class="regular"
+                    style="margin: 0">{{ values.current_summary }}</h4>
+                <h5 class="extralight">Feels
+                                       like {{ values.feels_like_temp }}</h5>
+            </li>
+            </li>
+        </ul>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <h4 class="extralight extra-bottom">
+                Wind: {{ values.current_windspeed }} mph {% if
                     values.current_windbearing %}
-                    from the {{ values.current_windbearing.abbrev }}{% endif %}
-                </h4>
-                <h4 class="regular">Next Hour</h4>
-                <h5 class="extralight extra-bottom">{{ values.minutely_summary }}</h5>
-                <h4 class="regular">Next 24 Hours</h4>
-                <h5 class="extralight extra-bottom">{{ values.hourly_summary }}</h5>
-                <h4 class="regular">The Sun</h4>
-                <h5 class="extralight">Rises at {{ values.sunrise }}</h5>
-                <h5 class="extralight">Sets at {{ values.sunset }}</h5>
-            </div>
+                from the {{ values.current_windbearing.abbrev }}{% endif %}
+            </h4>
+            <h4 class="regular">Next Hour</h4>
+            <h5 class="extralight extra-bottom">{{ values.minutely_summary }}</h5>
+            <h4 class="regular">Next 24 Hours</h4>
+            <h5 class="extralight extra-bottom">{{ values.hourly_summary }}</h5>
+            <h4 class="regular">The Sun</h4>
+            <h5 class="extralight">Rises at {{ values.sunrise }}</h5>
+            <h5 class="extralight">Sets at {{ values.sunset }}</h5>
         </div>
+    </div>
     <div class="row">
         <div class="col-sm-12">
             <p class="no-link-color text-right ">
                 <small><a href="{{ values.url_link }}">Forecast.io</a></small>
             </p>
         </div>
-        </div>
+    </div>
 </div>
 
 
