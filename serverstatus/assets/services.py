@@ -330,7 +330,12 @@ class SubSonic(Service):
         return entry
 
     def _get_server_full_url(self):
-        serverpath, _ = self.service_config['serverpath'].strip('/').split('/')
+        serverpath = self.service_config['serverpath'].strip('/')
+        try:
+            serverpath, _ = serverpath.split('/')
+        except ValueError as err:
+            self.logger.warning(
+                'Issue parsing Subsonic server path: {}'.format(err))
         return '{url}:{port:d}/{path}'.format(url=self.service_config['url'],
                                               port=self.service_config['port'],
                                               path=serverpath)
@@ -365,7 +370,7 @@ class ServerSync(Service):
     def __init__(self, server_info):
         Service.__init__(self, server_info)
         self.server_info = server_info
-        self.lockfile_path = self.server_info['lockfile_path']
+        self.lockfile_path = self.server_info.get('lockfile_path', None)
         self._service_name = 'server-sync'
         self._connect_status = self._test_server_connection()
         self._resolved_status_mapping = self._map_connection_status()

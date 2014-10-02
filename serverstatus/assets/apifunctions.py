@@ -50,11 +50,6 @@ class APIFunctions(object):
     def services(self):
         self._load_configs()
         servers = [self.plex, self.subsonic, self.server_sync, self.crashplan]
-        for server in servers:
-            status = server.connection_status
-            self.logger.debug('{} connection updated to: {}'.
-                              format(server.service_name,
-                                     status))
         servers_mapped = [getattr(server, 'status_mapping') for server in
                           servers]
         servers_dict = OrderedDict()
