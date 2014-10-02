@@ -1,7 +1,11 @@
-from unittest import TestCase
+import urllib2
 import unittest
 from collections import OrderedDict
 from copy import deepcopy
+
+from flask import Flask
+from flask.ext.testing import TestCase as flaskTestCase
+from flask.ext.testing import LiveServerTestCase
 
 from serverstatus import app
 from serverstatus.assets.apifunctions import APIFunctions
@@ -9,7 +13,7 @@ from serverstatus.assets.services import ServerSync, SubSonic
 from serverstatus.assets.weather import Forecast
 
 
-class TestApiFunctions(TestCase):
+class TestApiFunctions(unittest.TestCase):
     def setUp(self):
         self.app = app.test_client()
         self.apifunctions = APIFunctions(app.config)
@@ -62,8 +66,9 @@ class TestApiFunctions(TestCase):
         if not result:
             self.assertIs(result, None)
         if result:
-            for key in result:
-                self.assertIsInstance(result[key], dict)
+            self.assertIsInstance(result, list)
+            for video in result:
+                self.assertIsInstance(video, dict)
 
     def subsonic_nowplaying(self, result):
         if not result:
@@ -73,7 +78,7 @@ class TestApiFunctions(TestCase):
                 self.assertIsInstance(result[key], dict)
 
 
-class TestSubSonicServer(TestCase):
+class TestSubSonicServer(unittest.TestCase):
     def setUp(self):
         self.app = app.test_client()
         self.config = app.config['SUBSONIC_INFO']
@@ -125,7 +130,7 @@ class TestSubSonicServer(TestCase):
         self.assertFalse(self.subsonic.connection_status)
 
 
-class TestForecastIO(TestCase):
+class TestForecastIO(unittest.TestCase):
     def setUp(self):
         self.app = app.test_client()
         self.config = app.config['WEATHER']
@@ -137,7 +142,7 @@ class TestForecastIO(TestCase):
             Forecast(config)
 
 
-class TestServerSync(TestCase):
+class TestServerSync(unittest.TestCase):
     def setUp(self):
         self.app = app.test_client()
         self.config = app.config['SERVERSYNC_INFO']
@@ -153,6 +158,35 @@ class TestServerSync(TestCase):
         config['lockfile_path'] = '/tmp/badfile.lock'
         serversync = ServerSync(config)
         self.assertFalse(serversync.connection_status)
+
+
+class TestLiveServer(LiveServerTestCase):
+    server_address = 'http://192.168.1.101/status/'
+
+    def create_app(self):
+        self.app = Flask(__name__)
+        self.app.config.update(TESTING=True, LIVESERVER_PORT=8943)
+        return self.app
+
+    def test_server_is_up_and_running(self):
+        response = urllib2.urlopen(MyTest.server_address)
+        self.assertEqual(response.code, 200)
+
+
+class TestDebugServer(flaskTestCase):
+    def create_app(self):
+        app = Flask(__name__)
+        app.config['TESTING'] = True
+        return app
+
+    def test_some_json(self):
+        functions_to_test = (func for func in dir(APIFunctions) if not
+        func.startswith('_'))
+        for func in functions_to_test:
+            test_api = '/api/' + func
+            response = self.client.get(test_api)
+            print 'hi'
+            self.assertEquals(response.json, dict())
 
 
 if __name__ == '__main__':
