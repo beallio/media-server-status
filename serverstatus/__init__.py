@@ -1,3 +1,7 @@
+"""
+Initialize and setup flask app
+"""
+
 import imp
 import os
 import logging
@@ -8,9 +12,10 @@ from flask import Flask
 
 app = Flask(__name__)
 
+# update config for flask app
 app.config.update(
     APPNAME='server_status',
-    LOGGINGMODE=logging.DEBUG,
+    LOGGINGMODE=logging.DEBUG,  
     APPLOCATION=os.path.join(os.path.dirname(os.path.dirname(
         os.path.realpath(__file__)))),
     LOG_LOCATION='/tmp',
@@ -95,8 +100,8 @@ def _load_config_file(mod_logger=None):
         raise MissingConfigFile(logger_msg)
 
 
-# initialize LOGGER
-logger = _setup_logger()
+
+logger = _setup_logger()  # initialize LOGGER
 
 # import config data from config file into flask app object
 _load_config_file(logger)
