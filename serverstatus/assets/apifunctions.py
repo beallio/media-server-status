@@ -1,3 +1,7 @@
+"""
+Serves as backend for returning information about server to jQuery and Jinja
+templates.  Data is returned in the form of dicts to mimic JSON formatting.
+"""
 from collections import OrderedDict
 import logging
 
@@ -10,6 +14,22 @@ import serverstatus.assets.wrappers as wrappers
 
 
 class APIFunctions(object):
+    """
+    Serves as backend for returning information about server to jQuery and Jinja
+    templates.  Data is returned in the form of dicts to mimic JSON formatting.
+
+    Any function within the APIFunctions class maybe called externally as long as
+    the function does not start with "_".  For example, a user/website may return
+    data from http://foobar.com/api/system_info but not
+    http://foobar.com/api/_get_plex_cover_art
+
+    Examples to return data:
+    To return system info:
+    http://foobar.com/api/system_info
+
+    To return network speed:
+    http://foobar.com/api/network_speed
+    """
     def __init__(self, config):
         self.logger = LOGGER
         LOGGER.debug('{} initialized'.format(__name__))
@@ -23,6 +43,11 @@ class APIFunctions(object):
     @staticmethod
     @wrappers.logger('debug')
     def system_info():
+        """
+        Returns data for system info section (memory, load, uptime)
+
+        :return: dict
+        """
         get_system_info = GetSystemInfo()
         output = get_system_info.get_info()
         return output
@@ -30,20 +55,41 @@ class APIFunctions(object):
     @staticmethod
     @wrappers.logger('debug')
     def network_speed():
+        """
+        Returns server network speed.  Sleep defines the length of time in
+        between polling for network IO data to calculate speed based off delta
+
+        :return: dict
+        """
         return get_network_speed(sleep=5)
 
     @staticmethod
     @wrappers.logger('debug')
     def ping():
+        """
+        Returns ping from Google DNS (default)
+
+        :return: dict
+        """
         return dict(ping='{:.0f}'.format(get_ping()))
 
     @wrappers.logger('debug')
     def storage(self):
+        """
+        Returns formatted storage data based off options selected in Config file
+
+        :return: dict
+        """
         paths = get_partitions_space(self.config['PARTITIONS'])
         return dict(total=get_total_system_space(), paths=paths)
 
     @wrappers.logger('debug')
     def ip_address(self):
+        """
+        Returns servers internal and external IP addresses
+
+        :return: dict
+        """
         return dict(wan_ip=get_wan_ip(), internal_ip=self.config['INTERNAL_IP'])
 
     @wrappers.logger('debug')
@@ -59,6 +105,12 @@ class APIFunctions(object):
 
     @wrappers.logger('debug')
     def media(self):
+        """
+        Returns now playing data for Plex and Subsonic (if any), and recently
+        added items for both
+
+        :return: dict
+        """
         self._load_configs()
         subsonic = self.subsonic
         plex = self.plex
@@ -70,11 +122,21 @@ class APIFunctions(object):
 
     @wrappers.logger('debug')
     def forecast(self):
+        """
+        Gets forecast data from forecast.io
+
+        :return: dict
+        """
         self._load_configs()
         return self.weather.get_data()
 
     @wrappers.logger('debug')
     def plex_transcodes(self):
+        """
+        Gets number of transcodes from Plex
+
+        :return: dict
+        """
         self._load_configs()
         return dict(plex_transcodes=self.plex.transcodes)
 
@@ -88,6 +150,11 @@ class APIFunctions(object):
         return self.subsonic.get_cover_art(cover_id, size)
 
     def _load_configs(self):
+        """
+        Loads config data for Service subclasses if not already loaded to
+        prevent errors.
+        :return: Service class
+        """
         if self.subsonic is None:
             try:
                 self.subsonic = SubSonic(self.config['SUBSONIC_INFO'])
