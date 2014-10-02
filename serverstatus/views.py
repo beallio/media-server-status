@@ -1,3 +1,8 @@
+"""
+Routing file for flask app
+Handles routing for requests
+"""
+
 import json
 import datetime
 
@@ -10,6 +15,9 @@ from assets import apifunctions
 @app.route('/')
 @app.route('/index')
 def index():
+    """
+    Base index view at "http://www.example.com/"
+    """
     start_time = datetime.datetime.now()
     return render_template('index.html',
                            time=datetime.datetime.now() - start_time,
@@ -18,6 +26,12 @@ def index():
 
 @app.route('/api/<data>', methods=['GET'])
 def get_json(data):
+    """
+    Returns API data data based on "http://www.example.com/api/<data>" 
+    call where <data> is function is a function in the APIFunction 
+    class in the apifunctions module.  
+    Returns data in JSON format.
+    """
     values, status = BACKENDCALLS.get_data(data)
     json_data = json.dumps(values)
     # set mimetype to prevent client side manipulation since we're not using
@@ -27,6 +41,12 @@ def get_json(data):
 
 @app.route('/html/<data>')
 def html_generator(data):
+    """
+    Returns html rendered jinja templates based on "http://www.example.com/html/<data>"
+    call where <data> is a jinja template in the "templates" directory.
+    Returns rendered html in plain text to client, so we use this data to 
+    load divs via jQuery on the client side
+    """
     values, status = BACKENDCALLS.get_data(data)
     start = datetime.datetime.now()
     rendered_html = render_template(data + '.html', values=values)
@@ -38,6 +58,11 @@ def html_generator(data):
 
 @app.route('/img/<data>')
 def get_img_data(data):
+    """
+    Returns image to client based on "http://www.example.com/img/<data>"
+    request where <data> is a flask request such as 
+    "http://www.example.com/img/subsonic?cover=28102"
+    """
     start = datetime.datetime.now()
     resp = BACKENDCALLS.get_image_data(request)
     app.logger.debug('Image request time for {}: {}'
