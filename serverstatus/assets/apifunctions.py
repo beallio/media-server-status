@@ -94,6 +94,11 @@ class APIFunctions(object):
 
     @wrappers.logger('debug')
     def services(self):
+        """
+        Returns sorted status mappings for servers listed in config file
+        
+        :return: dict
+        """
         self._load_configs()
         servers = [self.plex, self.subsonic, self.server_sync, self.crashplan]
         servers_mapped = [getattr(server, 'status_mapping') for server in
