@@ -133,6 +133,7 @@ class APIFunctions(object):
         :return: dict
         """
         self._load_configs()
+        self.weather.reload_data()
         return self.weather.get_data()
 
     @wrappers.logger('debug')
