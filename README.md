@@ -15,12 +15,46 @@ Server status dashboard written in python 2.7, using flask on the backend, and b
 
 
 ## Setup ##
-Need to install the following dependencies for Pillow (assuming Pillow's installed in a Virtual Env) 
-if they're not already install on the system:
 
-* libjpeg-dev
-* zlib1g-dev
-* libpng12-dev
+Installation instructions are for a Debian-based distro.  You will need to adjust accordingly to your linux-based setup.
+
+Run the following commands (assuming the following is not installed on your system)
+
+    sudo apt-get update && sudo apt-get -y upgrade
+    sudo apt-get install python-dev libjpeg-dev zlib1g-dev libpng12-dev pip virtualenv virtualenvwrapper git
+
+Note the image libraries are in support of Pillow
+
+Now to setup the folder to contain the app and virtual environment
+
+    cd mkdir /var/www/serverstatus
+    mkvirtualenv venv
+    
+Clone the repository to your system
+
+    sudo git clone https://bitbucket.org/beallio/media-server-dashboard.git
+
+
+Install additional python requirements in virtual environment
+
+    pip install -r requirements.txt
+
+Setup config file
+    
+    vim config.py
+    
+Move setup file outside of root app directory (by default the app assumes the location is "/var".  
+You'll need to adjust the import in serverstatus/__init__.py if you place it elsewhere).
+
+    sudo mv config.py /var/config.py
+    
+Change permissions the user that will run gunicorn and the WSGI (e.g. $APPUSER/$APPGROUP)
+
+    sudo chown $APPUSER:$APPGROUP /var/config.py
+
+Run test server to ensure repository and python requirements installed correctly
+
+    ./__init__.py
 
 
 ### Gunicorn on Apache ### 
