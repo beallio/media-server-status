@@ -18,9 +18,9 @@ class APIFunctions(object):
     Serves as backend for returning information about server to jQuery and Jinja
     templates.  Data is returned in the form of dicts to mimic JSON formatting.
 
-    Any function within the APIFunctions class maybe called externally as long as
-    the function does not start with "_".  For example, a user/website may return
-    data from http://foobar.com/api/system_info but not
+    Any function within the APIFunctions class maybe called externally as long
+    as the function does not start with "_".  For example, a user/website may
+    return data from http://foobar.com/api/system_info but not
     http://foobar.com/api/_get_plex_cover_art
 
     Examples to return data:
@@ -96,7 +96,6 @@ class APIFunctions(object):
     def services(self):
         """
         Returns sorted status mappings for servers listed in config file
-        
         :return: dict
         """
         self._load_configs()
@@ -147,10 +146,20 @@ class APIFunctions(object):
         return dict(plex_transcodes=self.plex.transcodes)
 
     def _get_plex_cover_art(self, args):
+        """
+        Gets Plex cover art passing flask requests into Plex class
+
+        :return: image
+        """
         self._load_configs()
         return self.plex.get_cover_image(**args)
 
     def _get_subsonic_cover_art(self, cover_id, size):
+        """
+        Gets subsonic cover art passing flask requests into Subsonic class
+
+        :return: image
+        """
         self._load_configs()
         cover_id = int(cover_id)
         return self.subsonic.get_cover_art(cover_id, size)

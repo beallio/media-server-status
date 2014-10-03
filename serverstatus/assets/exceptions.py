@@ -2,6 +2,7 @@
 Custom exceptions for managing different servers
 """
 
+
 class MissingConfigFile(Exception):
     """
     Config file not found
