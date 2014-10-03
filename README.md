@@ -3,11 +3,11 @@
 ## Screenshots ##
 
 #### Now Playing ####
-![nowplaying](serverstatus/docs/now_playing_screenshot.png)
+![nowplaying](https://bytebucket.org/beallio/media-server-dashboard/raw/3ddb5482ea252ef402eb5d65f90514fac8cb94fa/serverstatus/docs/now_playing_screenshot.png)
 
 
 #### Recently Added ####
-![nowplaying](serverstatus/docs/recently_added_screenshot.png)
+![nowplaying](https://bytebucket.org/beallio/media-server-dashboard/raw/3ddb5482ea252ef402eb5d65f90514fac8cb94fa/serverstatus/docs/recently_added_screenshot.png)
 
 
 ## Introduction ##
