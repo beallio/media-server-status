@@ -1,9 +1,20 @@
-Server Status
-=============
+# Server Status #
 
+## Screenshots ##
+
+#### Now Playing ####
+![nowplaying](serverstatus/docs/now_playing_screenshot.png)
+
+
+#### Recently Added ####
+![nowplaying](serverstatus/docs/recently_added_screenshot.png)
+
+
+## Introduction ##
 Server status dashboard written in python 2.7, using flask on the backend, and bootstrap and jQuery for design.
 
 
+## Setup ##
 Need to install the following dependencies for Pillow (assuming Pillow's installed in a Virtual Env) 
 if they're not already install on the system:
 
@@ -12,7 +23,7 @@ if they're not already install on the system:
 * libpng12-dev
 
 
-## Gunicorn on Apache ## 
+### Gunicorn on Apache ### 
 
     sudo -u $USER gunicorn wsgi:application -b $INTERNAL_IP:$PORT --workers=5
 
