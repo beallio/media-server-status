@@ -731,7 +731,7 @@ class Plex(Service):
             raise exceptions.PlexAPIDataError(msg)
         if is_now_playing:
             # only applicable if we want to retrieve now playing data from Plex
-            plex_path_to_art = video['@grandparentThumb']
+            plex_path_to_art = video.get('@grandparentThumb', video['@thumb'])
             try:
                 # this is only relevant for videos that are currently playing
                 video_data['progress'] = (float(video['@viewOffset']) / float(
