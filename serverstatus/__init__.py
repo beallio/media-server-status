@@ -15,12 +15,12 @@ app = Flask(__name__)
 # update config for flask app
 app.config.update(
     APPNAME='server_status',
-    LOGGINGMODE=logging.DEBUG,  
+    LOGGINGMODE=logging.DEBUG,
     APPLOCATION=os.path.join(os.path.dirname(os.path.dirname(
         os.path.realpath(__file__)))),
     LOG_LOCATION='/tmp',
     TEMP_LOCATION='/tmp',
-    CONFIG_LOCATION='/var/test_data.py')
+    CONFIG_LOCATION='/var/config.py')
 app.config['TEMP_IMAGES'] = os.path.join(app.config['TEMP_LOCATION'],
                                          'flask-images')
 app.config['APP_MODULESLOCATION'] = os.path.join(app.config['APPLOCATION'],
@@ -86,7 +86,7 @@ def _load_config_file(mod_logger=None):
     # import config file
     config_location = app.config.get('CONFIG_LOCATION', None)
     try:
-        config_data_file = imp.load_source('test_data', config_location)
+        config_data_file = imp.load_source('config', config_location)
         for data in gen_contents(config_data_file):
             app.config.update(data)
         if mod_logger:
@@ -98,7 +98,6 @@ def _load_config_file(mod_logger=None):
                       '"{dir_location}"').format(**errs)
         mod_logger.critical(logger_msg)
         raise MissingConfigFile(logger_msg)
-
 
 
 logger = _setup_logger()  # initialize LOGGER

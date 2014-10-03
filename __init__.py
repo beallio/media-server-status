@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """
-Main initilizating file.  If called from command line starts WSGI debug testing server
+Main initializing file.  If called from command line starts WSGI debug testing
+server
 """
-
 
 if __name__ == '__main__':
     from serverstatus import app
