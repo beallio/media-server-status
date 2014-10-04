@@ -69,7 +69,7 @@ class Service(object):
         output = {service_name: dict()}
         try:
             output = {service_name: self._services_status_mapping[
-                str(self._connect_status)]}
+                str(self.connection_status)]}
             output[service_name][
                 'title'] = self._add_service_name_to_status_mapping()
             if self.external_url:
