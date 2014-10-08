@@ -55,4 +55,5 @@ WEATHER = dict(
 SERVER_URL = 'http://www.example.com'
 DEBUG = False
 SECRET_KEY = 'my secret'
+WEBSITE_TITLE = 'Your title here'
 

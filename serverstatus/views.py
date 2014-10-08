@@ -20,6 +20,7 @@ def index():
     """
     start_time = datetime.datetime.now()
     return render_template('index.html',
+                           title=app.config['WEBSITE_TITLE'],
                            time=datetime.datetime.now() - start_time,
                            testing=app.config['TESTING'])
 
