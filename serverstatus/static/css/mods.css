@@ -53,29 +53,6 @@ a:hover {
     content: attr(data-icon);
 }
 
-/* Changes carousel slide transition to fade transition
-.carousel {
-overflow: hidden;
-}
-.carousel .item {
--webkit-transition: opacity 1s;
--moz-transition: opacity 1s;
--ms-transition: opacity 1s;
--o-transition: opacity 1s;
-transition: opacity 1s;
-}
-.carousel .active.left, .carousel .active.right {
-left:0;
-opacity:0;
-z-index:2;
-}
-.carousel .next, .carousel .prev {
-left:0;
-opacity:1;
-z-index:1;
-}
-End of carousel slide transition hack */
-
 /* Disables shadowing on right and left sides of carousel images for a crisp look */
 .carousel-control.left {
     background-image: none;
