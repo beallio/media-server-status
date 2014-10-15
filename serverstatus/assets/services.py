@@ -830,11 +830,13 @@ class Plex(Service):
                 # first show in season
                 video = video['Video']
         # get originally date playing on TV
-        aired_date = video['@originallyAvailableAt']
-        video_data.update(title=video['@title'],
-                          aired_date=self.convert_date_fmt(aired_date,
-                                                           "%Y-%m-%d",
-                                                           "%m/%d/%Y"))
+        try:
+            aired_date = video['@originallyAvailableAt']
+            aired_date = self.convert_date_fmt(aired_date, "%Y-%m-%d",
+                                               "%m/%d/%Y")
+        except KeyError:
+            aired_date = 'Not available'
+        video_data.update(title=video['@title'], aired_date=aired_date)
 
         # Set individual show summary to parent summary if show summary does
         # not exist
