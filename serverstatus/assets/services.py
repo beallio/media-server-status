@@ -219,7 +219,7 @@ class SubSonic(Service):
         try:
             many_songs_playing = isinstance(now_playing['nowPlaying']['entry'],
                                             list)
-        except TypeError:
+        except (KeyError, TypeError):
             # no songs playing
             return None
         if many_songs_playing:
