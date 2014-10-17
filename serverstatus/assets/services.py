@@ -309,7 +309,7 @@ class SubSonic(Service):
                      coverArtExternalLink_xl=cover_art_link[1])
         try:
             created_date = self.convert_date_fmt(entry[u'created'],
-                                                 '%Y-%m-%dT%H:%M:%S',
+                                                 '%Y-%m-%dT%H:%M:%S.%fZ',
                                                  '%m/%d/%Y %I:%M%p')
         except ValueError as dt_conv_err:
             self.logger.error('Error converting date: {}'.format(dt_conv_err))
