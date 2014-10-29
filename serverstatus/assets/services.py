@@ -302,9 +302,10 @@ class SubSonic(Service):
         if max_size:
             max_size = 1200
         # create url link to thumbnail coverart, and full-size coverart
-        cover_art_link = [''.join([self._img_base_url, str(entry['coverArt']),
-                                   '&size=', str(size)]) for size in
-                          (min_size, max_size)]
+        cover_art_link = [''.join([self._img_base_url,
+                                   str(entry.get('coverArt', entry['id'])),
+                                   '&size=',
+                                   str(size)]) for size in (min_size, max_size)]
         entry.update(coverArtExternalLink_sm=cover_art_link[0],
                      coverArtExternalLink_xl=cover_art_link[1])
         try:
