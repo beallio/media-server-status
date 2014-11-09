@@ -232,8 +232,12 @@ class SubSonic(Service):
                 self._get_entry_info(now_playing['nowPlaying']['entry']))
         # remove entries from now playing if user hasn't touched them or
         # playlist auto advanced in X min
-        return [self._get_entry_info(entry, max_size=800) for entry in entries
-                if entry['minutesAgo'] <= 10]
+        results = [self._get_entry_info(entry, max_size=800) for entry in
+                   entries if entry['minutesAgo'] <= 10]
+        if results:
+            return results
+        else:
+            return None
 
     def set_output_directory(self, directory):
         # //TODO remove extraneous code
