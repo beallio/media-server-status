@@ -818,8 +818,12 @@ class Plex(Service):
                           summary=video.get('@parentSummary',
                                             video.get('@summary'))
                           if video['@summary'] != '' else 'Not available',
-                          season=int(video['@title'].lstrip('Season ')) if not
+                          season=video['@title'] if
+                          video['@title'].lower() == 'specials'
+                          else int(video['@title'].lstrip('Season ')) if not
                           is_now_playing else int(video['@parentIndex']))
+        if isinstance(video_data['season'], int):
+            video_data['season'] = '{0:02d}'.format(video_data['season'])
         if not is_now_playing:
             json_show_data = self._get_xml_convert_to_json('serverinfo',
                                                            video['@key'].

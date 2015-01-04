@@ -43,7 +43,9 @@ class Forecast(object):
                       hourly_summary=hourly['summary'],
                       sunset=self._convert_time_to_text(daily['sunsetTime']),
                       sunrise=self._convert_time_to_text(daily['sunriseTime']),
-                      url_link='{url}{lat},{lng}'.format(url=self.forcastio_link_url, lat=self.lat, lng=self.lng))
+                      url_link='{url}{lat},{lng}'.format(
+                          url=self.forcastio_link_url,
+                          lat=self.lat, lng=self.lng))
         if output['current_windspeed'] != 0:
             output['current_windbearing'] = self._get_wind_bearing_text(current['windBearing'])
         return output
